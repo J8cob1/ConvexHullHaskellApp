@@ -8,21 +8,14 @@ module Algorithms where
 
 -- Imports
 import Data.List
-import Prelude.Math
-import cmath
 
 -- Typedefs
-type Integer = Int
-type Point2D = (Integer, Integer)
+type Number = Double
+type Point2D = (Number, Number)
 
 {- Functions Common to one or more algorithms -}
 -- Finds the point in the list with the lowest x and y coordinate
 -- TODO: create QuickCheck test. Otherwise, it seems like it works
-lowestPoint :: [Point2D] -> Point2D
-lowestPoint listOfPoints = Data.List.minimum (listOfPoints)
-
-highestPoint :: [Point2D] -> Point2D
-highestPoint listOfPoints = Data.List.maximum (listOfPoints)
 
 -- Calculates the angle between two points, with respect to either the negative or positive x axis
 -- INPUT:
@@ -32,11 +25,14 @@ highestPoint listOfPoints = Data.List.maximum (listOfPoints)
 -- https://stackoverflow.com/questions/2339487/calculate-angle-of-2-points/2339510
 -- https://docs.python.org/2/library/cmath.html
 -- https://hackage.haskell.org/package/cmath
-angle :: Integer -> Point2D -> Point2D
-angle axis first second = 
-    case axis of
-        True -> cmath.atan (second[1] - first[1]) (second[0] - first[0])
-        False -> cmath.atan (first[1] - second[1]) (second[0] - first[0])
+angle :: Bool -> Point2D -> Point2D -> (Number, Point2D)
+angle axis (x1, y1) (x2, y2) =
+    if (x1 == x2 && y1 == y2) then 
+        (20, (x2, y2))
+    else 
+        case axis of
+            True -> (atan2 (y2 - y1) (x2 - x1), (x2, y2))
+            False -> (atan2 (y1 - y2) (x2 - x1), (x2, y2))
 
 {-
 - Jarvis March - A simple convex hull algorithm where we "gift warp"? our way around the set of points to find the convex hull
@@ -53,19 +49,26 @@ angle axis first second =
 - TODO: test
 - TODO: performance testing
 -}
-jarvisMarchGetNextVertex :: Point2D -> Point2D -> Boolean -> [Point2D] -> [Point2D]
-jarvisMarchGetNextVertex start end previous isRightChain coords = 
-    case previous of
-        end -> []
-        _ -> [Data.List.minimum (map (\x -> angle isRightChain start x) coords)]
+
+jarvisMarchGetChain :: Point2D -> Point2D -> Bool -> [Point2D] -> [Point2D]
+jarvisMarchGetChain start end isRightChain coords = 
+    if (hullPoint == end || hullPoint == start) then
+        []
+    else
+        [hullPoint] ++ (jarvisMarchGetChain hullPoint end isRightChain coords)
+    where 
+        hullPoint = ((\(x, y) -> y) (Data.List.minimum (map (angle isRightChain start) coords)))
+
 
 jarvisMarchHull :: [Point2D] -> [Point2D]
-jarvisMarchHull coords = 
-    [minPoint] 
-    ++ (jarvisMarchGetNextVertex minPoint maxPoint minPoint True coords) 
-    ++ [maxPoint] 
-    ++ (jarvisMarchGetNextVertex maxPoint start maxPoint False coords)
+jarvisMarchHull coords =
+    [minPoint] ++ (jarvisMarchGetChain minPoint maxPoint True coords) 
+    -- ++ [maxPoint] 
+    -- ++ (jarvisMarchGetChain maxPoint minPoint maxPoint False coords)
     where
-        maxPoint = maximum(coords)
-        minPoint = min(coords)
--- Calculate polar angle form starting point for every point in coords (with a map), then get the max of that
+        maxPoint = Data.List.maximum(coords)
+        minPoint = Data.List.minimum(coords)
+
+--jarvisMarchHull [(0.0, 0.0), (1.0, 1.0), (2.0, 0.0), (2.0, 3.0), (0.0, 3.0), (1.0, 2.0)]
+-- Calculate polar angle form starting point for every point in coords (with a map), then get the max of that 
+-- [(0.0, 0.0), (1.1, 1.1), (2.2,2.2)]

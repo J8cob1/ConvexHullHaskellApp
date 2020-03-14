@@ -3,14 +3,7 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: cmath-0.3@sha256:b38b6ef4c7d48c49994b922dfa76f043f9ad802d4c74f64389d44c868e18f8e1,672
-    pantry-tree:
-      size: 267
-      sha256: 8b2504e84772c601a631699b9e5fe6c0a9b9c09df462bb4391d829fd976b4be9
-  original:
-    hackage: cmath-0.3@sha256:b38b6ef4c7d48c49994b922dfa76f043f9ad802d4c74f64389d44c868e18f8e1,672
+packages: []
 snapshots:
 - completed:
     size: 491373
