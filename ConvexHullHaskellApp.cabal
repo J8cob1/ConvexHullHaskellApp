@@ -16,15 +16,15 @@ extra-source-files:  README.md
 executable ConvexHullHaskellApp
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       Algorithms
+  other-modules:       Algorithms, Interactive
   default-language:    Haskell2010
   build-depends:       base >= 4.9 && < 5, QuickCheck
 
 test-suite spec
   type: exitcode-stdio-1.0
   default-language: Haskell2010
-  hs-source-dirs: test
-  ghc-options: -fwarn-incomplete-patterns -fwarn-incomplete-uni-patterns
-  other-modules: AlgorithmSpec
+  hs-source-dirs: test, src
+  ghc-options: -fwarn-incomplete-patterns -fwarn-incomplete-uni-patterns -XTypeApplications
+  other-modules: Algorithms, AlgorithmSpec
   main-is: Spec.hs
   build-depends: base >=4.9 && < 5, hspec, QuickCheck

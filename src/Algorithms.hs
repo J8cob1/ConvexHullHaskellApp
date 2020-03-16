@@ -26,9 +26,13 @@ type Point2D = (Number, Number)
 -- https://math.stackexchange.com/questions/707673/find-angle-in-degrees-from-one-point-to-another-in-2d-space ?
 -- Functions Common to one or more algorithms 
 
+-- Checks if there are at least three points in this list
+-- Returns true if so, false otherwise
+-- Simple enough that no test is needed
 enoughPoints :: [Point2D] -> Bool
 enoughPoints coords = (length coords) > 2
 
+-- Removes a target item from a list and returns the resulting list
 removeFromList :: Point2D -> [Point2D] -> [Point2D]
 removeFromList item [] = []
 removeFromList item (x:xs) = 
@@ -38,6 +42,7 @@ removeFromList item (x:xs) =
         [x] ++ (removeFromList item xs)
 
 -- https://www.mathsisfun.com/polar-cartesian-coordinates.html 
+-- https://www.mathsisfun.com/geometry/radians.html
 polarAngle :: Bool -> Point2D -> Point2D -> Point2D -> Ordering
 polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =  
     if (angle1 > angle2) then
@@ -48,11 +53,26 @@ polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =
         EQ
     where
         angle1 = 
-            if (negativeXAxis) then
-                atan ((y1 - sy) / (sx - x1)) -- not sure if this is right
-            else
+            if (x1 == sx) then
+                0
+            else if (x1 > sx) then
                 atan ((y1 - sy) / (x1 - sx))
-        angle2 = atan ((y2 - sy) / (x2 - sx))
+            else
+                3.14 - atan ((y1 - sy) / (x1 - sx))
+        angle2 = 
+            if (x2 == sx) then
+                0
+            else if (x2 > sx) then
+                atan ((y2 - sy) / (x2 - sx))
+            else
+                3.14 - atan ((y2 - sy) / (x2 - sx))
+
+--                angle1 = 
+--            if (negativeXAxis) then
+--                atan ((y1 - sy) / (sx - x1)) -- not sure if this is right
+--            else
+--                atan ((y1 - sy) / (x1 - sx))
+--        angle2 = atan ((y2 - sy) / (x2 - sx))
 
 {-
 - Jarvis March - A simple convex hull algorithm where we "gift warp"? our way around the set of points to find the convex hull
