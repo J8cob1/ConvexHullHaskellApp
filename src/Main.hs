@@ -2,16 +2,14 @@ module Main where
 
 import Algorithms
 import Interactive
-
-jarvisMarchResults = runAlgorithm "1"
-grahamsScanResults = runAlgorithm "2"
+import Criterion
 
 main :: IO ()
 main = do
     putStrLn "Welcome to the Convex Hull App\n---------------------------------------------------\n"
     putStrLn "What would you like to do?"
     putStrLn "    1. View some precanned runs of the algorithms I've got implemented"
-    putStrLn "    2. Enter some input and select the algorithm you want to run"
+    putStrLn "    2. Select an algorithm and a data set you want to run the selected algorithm on"
     putStrLn "    3. Exit\n"
     putStrLn "Enter Selection (as an integer): "
 
@@ -25,22 +23,34 @@ main = do
         print exampleInput3
         putStr "\n"
 
-        putStrLn "Jarvis March:"
-        putStr "Run 1: "
-        print (runAlgorithm "1" "1")
-        putStr "Run 2: "
-        print (runAlgorithm "1" "2")
-        putStr "Run 3: "
-        print (runAlgorithm "1" "3")
-        putStr "\n"
+        -- putStrLn "Jarvis March:"
+        -- putStr "Result from data set 1: "
+        -- print (runAlgorithm "1" "1")
+        -- putStrLn "Timing: "
+        -- Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "1")
+        -- putStr "Result from data set 2: "
+        -- print (runAlgorithm "1" "2")
+        -- putStrLn "Timing: "
+        -- Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "2")
+        -- putStr "Result from data set 3: "
+        -- print (runAlgorithm "1" "3")
+        -- putStrLn "Timing: "
+        -- Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "3")
+        -- putStr "\n"
 
         putStrLn "Graham's Scan:"
-        putStr "Run 1: "
+        putStr "Result from data set 1: "
         print (runAlgorithm "2" "1")
-        putStr "Run 2: "
+        putStrLn "Timing: "
+        Criterion.benchmark (Criterion.whnf (runAlgorithm "2") "1")
+        putStr "Result from data set 2: "
         print (runAlgorithm "2" "2")
-        putStr "Run 3: "
+        putStrLn "Timing: "
+        Criterion.benchmark (Criterion.whnf (runAlgorithm "2") "2")
+        putStr "Result from data set 3: "
         print (runAlgorithm "2" "3")
+        putStrLn "Timing: "
+        Criterion.benchmark (Criterion.whnf (runAlgorithm "2") "3")
         putStr "\n"
 
     else if (menuSelection == "2") then do
@@ -56,14 +66,15 @@ main = do
         print exampleInput2
         putStr "3. "
         print exampleInput3
+        putStrLn ""
         putStrLn "Enter Selection (as an integer): \n"
         dataSelection <- getLine
-        putStr "\n"
 
         putStr "Results: "
         print (runAlgorithm algorithmSelection dataSelection)
-
-        --putStr "Enter the points you want convex hulled, in the form:"
+        putStrLn ""
+        putStrLn "Timing: "
+        Criterion.benchmark (Criterion.whnf (runAlgorithm algorithmSelection) dataSelection)
     else
         putStrLn "Bye!"
 

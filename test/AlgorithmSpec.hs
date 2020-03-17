@@ -17,41 +17,49 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
 
--- To test for algorithm correctness
-testDataPoints :: [Point2D] 
-testDataPoints = Data.List.sort [(0,0),(4,4),(2,4),(2,2),(1,1)]
+-- Data: to use for testing
+testDataPoints1 :: [Point2D] 
+testDataPoints1 = []
 
-testDataHull :: [Point2D]
-testDataHull = Data.List.sort [(0,0),(2,2),(2,4),(4,4)]
+testDataPoints2 :: [Point2D] 
+testDataPoints2 = [(0,0),(4,4)]
 
--- Tests for both algorithms
--- enoughPoints 
--- removeFromList
--- polarAngle
+testDataPoints3 :: [Point2D] 
+testDataPoints3 = [(0,0),(4,4),(2,4)]
 
+testDataPoints4 :: [Point2D] 
+testDataPoints4 = [(-1,-1),(5,5),(-1,5),(5,-1),(1,1),(2,3),(4,1),(0,1)]
 
--- Graham's Scan Tests
--- makesLeftTurn
--- gramScanCleanUpList
--- gramScanAddNextPoint
+testDataHull1 :: [Point2D]
+testDataHull1 = []
 
--- grahamScan <-- *
+testDataHull2 :: [Point2D]
+testDataHull2 = []
 
--- Jarvis March Tests
--- jarvisMarchConstructChain
--- jarvisMarch <-- *
+testDataHull3 :: [Point2D]
+testDataHull3 = [(0,0),(2,4),(4,4)]
 
-testConvexHullAlgorithm :: ([Point2D] -> [Point2D]) -> Bool
-testConvexHullAlgorithm algorithm = 
-    length (sortedPoints Data.List.\\ testDataHull) == 0
+testDataHull4 :: [Point2D]
+testDataHull4 = [(-1,-1),(5,5),(-1,5),(5,-1)]
+
+-- A function that tests the security of a convex hull alg
+testConvexHullAlgorithm :: ([Point2D] -> [Point2D]) -> [Point2D] -> [Point2D] -> Bool
+testConvexHullAlgorithm algorithm points expectedHull = 
+    (Data.List.sort expectedHull) == resultSet
     where
-        sortedPoints = Data.List.sort (algorithm testDataPoints)
+        resultSet = Data.List.sort (algorithm points)
 
 testRemoveList :: Bool
 testRemoveList = 
     (Data.List.elem (4,4) listWithElementRemoved) == False
     where
-        listWithElementRemoved = removeFromList (4,4) testDataPoints
+        listWithElementRemoved = removeFromList (4,4) testDataPoints3
+
+testRemoveDupsFromList :: Bool
+testRemoveDupsFromList = 
+    listWithDupsRemoved == [(-1,-1),(4,5)]
+    where
+        listWithDupsRemoved = removeDupsFromList (-1,-1) [(-1,-1),(2,2),(4,4),(1,1),(3,3),(4,5)]
 
 -- Test data
 -- https://www.mathsisfun.com/polar-cartesian-coordinates.html used as reference
@@ -75,33 +83,26 @@ testPolarAnglePosEQ =
     -- p1 and p2 have equal polar angles with respect to the start point and the positive x axis
     (polarAngle False start p1 p3 == EQ)
 
-{-testPolarAngleNegGT :: Bool
-testPolarAngleNegGT = 
-    -- p2 has a lesser polar angle than p1 with respect to start and the negative x-axis
-    (polarAngle True start p2 p1 == LT)
-
-testPolarAngleNegLT :: Bool
-testPolarAngleNegLT =
-    -- p1 has a greater polar angle with respect to start and the negative x-axis than p2
-    (polarAngle True start p1 p2 == GT)
-
-testPolarAngleNegEQ :: Bool
-testPolarAngleNegEQ = 
-    -- p1 and p2 have equal polar angles with respect to the start point and the negative x-axis
-    (polarAngle True start p1 p3 == EQ)-}
-
-
 -- Pretty much copied and modified from the hw1 test spec :)
 -- Not sure how all this works yet
 spec :: Spec
 spec = do 
-    prop "Graham's Scan Functions Correctly" $ (testConvexHullAlgorithm grahamScan)
-    prop "Jarvis March Functions Correctly" $ (testConvexHullAlgorithm jarvisMarch)
-    prop "Remove from list functions Correctly" $ testRemoveList
-    prop "polarAngle greater than on positive x-axis works correctly" $ testPolarAnglePosGT
-    prop "polarAngle less than on positive x-axis works correctly" $ testPolarAnglePosLT
-    prop "polarAngle equal to on positive x-axis works correctly" $ testPolarAnglePosEQ
-    --prop "polarAngle greater than on negative axis works correctly" $ testPolarAngleNegGT
-    --prop "polarAngle less than on negative x-axis works correctly" $ testPolarAngleNegLT
-    --prop "polarAngle equal to on negative x-axis works correctly" $ testPolarAngleNegEQ
+    prop "testRemoveList" $ testRemoveList
+    prop "removeDupsFromList" $ testRemoveList
+    
+    prop "polarAngle greater than on positive x-axis" $ testPolarAnglePosGT --
+    prop "polarAngle less than on positive x-axis" $ testPolarAnglePosLT --
+    prop "polarAngle equal to on positive x-axis" $ testPolarAnglePosEQ --
+
+    -- Don't let these decieve you. Graham's scan is broken
+    prop "Graham's Scan on an empty list" $ (testConvexHullAlgorithm grahamScan testDataPoints1 testDataHull1)
+    prop "Graham's Scan on a set of insufficent points" $ (testConvexHullAlgorithm grahamScan testDataPoints2 testDataHull2)
+    prop "Graham's Scan on a three item set that is already a convex hull" $ (testConvexHullAlgorithm grahamScan testDataPoints3 testDataHull3)
+    prop "Graham's Scan on a normal set of points" $ (testConvexHullAlgorithm grahamScan testDataPoints4 testDataHull4)
+
+    -- Don't let these decieve you. Jarvis March is broken
+    prop "Jarvis March Empty List" $ (testConvexHullAlgorithm jarvisMarch testDataPoints1 testDataHull1)
+    prop "Jarvis March Insufficient Points" $ (testConvexHullAlgorithm jarvisMarch testDataPoints1 testDataHull1)
+    prop "Jarvis March Already-A-Hull" $ (testConvexHullAlgorithm jarvisMarch testDataPoints1 testDataHull1)
+    prop "Jarvis March Normal-Exec" $ (testConvexHullAlgorithm jarvisMarch testDataPoints1 testDataHull1)
 
