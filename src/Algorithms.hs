@@ -22,7 +22,6 @@
 -- https://hackage.haskell.org/package/cmath ?
 -- https://www.mathsisfun.com/polar-cartesian-coordinates.html 
 -- https://www.mathsisfun.com/geometry/radians.html
-
 -}
 
 module Algorithms where
@@ -34,7 +33,12 @@ import Data.List
 type Number = Double
 type Point2D = (Number, Number)
 
-{- Functions Common to one or more algorithms -} 
+
+
+------------------------------------------------
+-- Functions Common to one or more algorithms -- 
+------------------------------------------------
+
 -- Checks if there are at least three points in this list
 -- Returns true if so, false otherwise
 -- Simple enough that no test is needed
@@ -50,12 +54,16 @@ removeFromList item (x:xs) =
     else
         [x] ++ (removeFromList item xs)
 
-{-
-- Jarvis March - A simple convex hull algorithm where we "gift warp"? our way around the set of points to find the convex hull
-- Reference: "Introduction to Algorithms. Third Edition" [CLRS]
-- TODO: test
-- TODO: performance testing
--}
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+-- Jarvis March - And functions specific to implementation                                                                       --
+-- Jarvis March is a simple convex hull algorithm where we "gift warp"? our way around the set of points to find the convex hull --
+-- My implementation attempts to simulate the working of the algorithm with list operations                                      --
+-- Reference: "Introduction to Algorithms. Third Edition" [CLRS]                                                                 --
+-----------------------------------------------------------------------------------------------------------------------------------
+
 -- Calculate polar angle form starting point for every point in coords (with a map), then get the max of that..?
 jarvisMarchConstructChain :: Bool -> [Point2D] -> [Point2D] -> Point2D -> [Point2D]
 jarvisMarchConstructChain isRightChain (x:xs) [] endPoint = (x:xs)
@@ -81,31 +89,44 @@ jarvisMarch points =
             maxPoint = Data.List.maximum points
             -- (removeFromList maxPoint points)
 
-{-
-- Graham's Scan - A simple convex hull algorithm where we "gift warp"? our way around the set of points to find the convex hull
-- Algorithm from: Cormon et al. "Introduction to Algorithms. Third Edition" [CLRS]
-- TODO: performance testing
--}
+--------------------------------------------------------------------------------------------------------------------------------------------------
+-- Graham's Scan - And functions specific to it's implementation                                                                                --
+--   * Graham's Scan convex hull algorithm that uses a stack and a push/pop strategy to iteratively calculate the convex hull, in O(nlogn) time --
+--   * Algorithm from: Cormon et al. "Introduction to Algorithms. Third Edition" [CLRS]                                                         --
+-- My implementation attempts to simulate the working of the algorithm with list operations                                                     --
+-------------------------------------------------------------------------------------------------------------------------------------------------- 
+
 -- Remove all points in the list with the same polar angle (with respect to a given starting point)
--- Presumes the items are ALREADY sorted by polar angle
-removeDupsFromList :: Point2D -> [Point2D] -> [Point2D]
-removeDupsFromList start [] = []
-removeDupsFromList start (x:[]) = [x]
-removeDupsFromList (sx, sy) ((x1,y1):(x2,y2):xs) = 
+-- Input:
+--   * param1 {Point2D} (start): the starting point from which we base our polar angle calculations,
+--   * param2 {[Point2D]} ((x:x1:...:xs)): the list we rare removing polar angle duplicates from
+-- Output: true if function returned the expected result, False otherwise
+-- Presumes the items are sorted by polar angle already
+removePolarAngleDupsFromList :: Point2D -> [Point2D] -> [Point2D]
+removePolarAngleDupsFromList start [] = []
+removePolarAngleDupsFromList start (x:[]) = [x]
+removePolarAngleDupsFromList (sx, sy) ((x1,y1):(x2,y2):xs) = 
     if ((x1,y1) /= (sx,sy) && (polarAngle False (sx, sy) (x1,y1) (x2,y2)) == EQ) then
         if (((x1 - sx)^2 + (y1 - sy)^2) > ((x2 - sx)^2 + (y2 - sy)^2)) then 
-            (removeDupsFromList (sx, sy) ((x1,y1):xs))
+            (removePolarAngleDupsFromList (sx, sy) ((x1,y1):xs))
         else
-            (removeDupsFromList (sx, sy) ((x2,y2):xs))
+            (removePolarAngleDupsFromList (sx, sy) ((x2,y2):xs))
     else
-        [(x1,y1)] ++ (removeDupsFromList (sx, sy) ((x2,y2):xs))
+        [(x1,y1)] ++ (removePolarAngleDupsFromList (sx, sy) ((x2,y2):xs))
 
--- Calculates the angle between two points with respect to the positive x-axis
--- INPUT:
---     axis: a boolean indicating whether to use the positive x axis
---     first: a point indicating if the starting point
---     second: a
--- might want to implement as polarAngle, polarAngleSort, polarAngleDupRemove?
+-- Compares the polar angles of two points with respect to a starting point and the positive x-axis, and returns an ordering specifying the result
+-- This is meant to be a list sorting function
+-- Input:
+--   * param1 {Bool} negateiveXAxis: a boolean indicating whether to use the negative x axis.
+--       This is not being used at the moment (it was, but I changed my mind), but I left it in here to be safe
+--   * param2 {Point2D} (sx, sy): the starting point to which we base our polar angle calculations
+--   * param3 {Point2D} (x1, y1): the first point whose polar angle we will calculate and compare
+--   * param4 {Point2D} (x2, y2): the second point whose polar angle we will calculate and compare
+-- Output:
+--   * EQ if (x1, y1) and (x2, y2) have equal polar angles with respect to the starting point and positive x axis
+--   * GT if (x1, y1) has a greater polar angle with respect to the starting point and positive x axis than (x2, y2)
+--   * LT if (x1, y1) has a smaller polar angle with respect to the starting point and positive x axis than (x2, y2)
+-- Idea: might want to implementing as polarAngle, polarAngleSort, polarAngleDupRemove, in case these end up getting used later
 -- https://stackoverflow.com/questions/2339487/calculate-angle-of-2-points/2339510
 -- https://docs.python.org/2/library/cmath.html
 -- https://hackage.haskell.org/package/cmath
@@ -151,7 +172,13 @@ polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =
             else 
                 3.14 - atan ((y2 - sy) / (x2 - sx))
 
--- CLRS. "Introduction to Algorithms" Textbook
+-- Tells you if the lines formed by (sx, sy) and (x1, y1) and (x1, y1) and (x2, y2) make a "left turn". This is used by the Graham's Scan Algorithm
+-- Input:
+--   * param1 {Point2D} (sx, sy): the starting point from which we base our "left turn" calculation of off
+--   * param2 {Point2D} (x1, y1): the first point from which we base our "left turn" calculation of off
+--   * param3 {Point2D} (y2, y2): the second point from which we base our "left turn" calculation of off
+-- Output: true if points form a left turn. False otherwise
+-- [CLRS] "Introduction to Algorithms" Textbook
 makesLeftTurn :: Point2D -> Point2D -> Point2D -> Bool
 makesLeftTurn (sx, sy) (x1, y1) (x2, y2) =  
     if (crossProduct < 0) then
@@ -165,29 +192,47 @@ makesLeftTurn (sx, sy) (x1, y1) (x2, y2) =
         y2m0 = (y2 - sy)
         crossProduct = x1m0 * y2m0 - x2m0 * y1m0 -- (p2 - p0) x (p1 - p0)
 
--- Utter nonsense
-gramScanCleanUpList :: Point2D -> [Point2D] -> [Point2D]
-gramScanCleanUpList newPoint (p1:p2:ps) = 
+-- A part of the Graham's Scan algorithm that pops points off of the "stack" (list) if the two points and the given new point don't make a left turn
+-- Once it sees that you've made a right turn, it puts the new point onto the stack
+-- Input:
+--   * param1 {Point2D} (newPoint): the starting point from which we base our "left turn" calculation of off
+--   * param2 {[Point2D]} (p1:p2:ps): the "stack" we will pop points off of for our left turn calculation
+-- Output: a set of points that, at the end of it's operation, will hopefully be the convex hull of a set of points
+-- [CLRS] "Introduction to Algorithms" Textbook
+gramsScanAmmendStack :: Point2D -> [Point2D] -> [Point2D]
+gramsScanAmmendStack newPoint (p1:p2:ps) = 
     if not (makesLeftTurn newPoint p1 p2) then
-        gramScanCleanUpList newPoint (p2:ps)
+        gramsScanAmmendStack newPoint (p2:ps)
     else
         newPoint:p1:p2:ps
-gramScanCleanUpList newPoint (x:xs) = (x:xs)
+gramsScanAmmendStack newPoint (x:xs) = (x:xs)
 
+-- A part of the Graham's Scan algorithm that wraps and recursively calls the gramsScanAmmendStack function
+-- The main gramsScan algorithm uses this
+-- Once it sees that you've made a right turn, it puts the new point onto the stack
+-- Input:
+--   * param1 {[Point2D]} (x:xs): a list of points representing a stack. 
+--   * param2 {[Point2D]} (y:ys): 
+-- Output: a set of points that, at the end of it's operation, will hopefully be the convex hull of a set of points
+-- [CLRS] "Introduction to Algorithms" Textbook
 gramScanAddNextPoint :: [Point2D] -> [Point2D] -> [Point2D]
 gramScanAddNextPoint [] _ = []
 gramScanAddNextPoint (x:xs) [] = (x:xs)
 gramScanAddNextPoint (x:xs) (y:ys) = 
     gramScanAddNextPoint cleanedList ys
     where
-        cleanedList = gramScanCleanUpList y (x:xs)
+        cleanedList = gramsScanAmmendStack y (x:xs)
 
-grahamScan :: [Point2D] -> [Point2D]
-grahamScan points = 
+-- The main function of the Graham's Scan algorithm
+-- Input {[Point2D]}: a list of points you want to find the conved hull of
+-- Output: ideally, the convex hull of the set of points, if it has one
+-- [CLRS] "Introduction to Algorithms" Textbook
+grahamsScan :: [Point2D] -> [Point2D]
+grahamsScan points = 
     if not (enoughPoints sortedPoints) then
         []
     else
         (gramScanAddNextPoint (reverse (take 3 sortedPoints)) ((drop 3 sortedPoints)))
     where
         minPoint = Data.List.minimum points
-        sortedPoints = removeDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
+        sortedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
