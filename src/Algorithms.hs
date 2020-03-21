@@ -98,31 +98,47 @@ removeFromList item (x:xs) =
 -- Reference: "Introduction to Algorithms. Third Edition" [CLRS]                                                                 --
 -----------------------------------------------------------------------------------------------------------------------------------
 
--- Calculate polar angle form starting point for every point in coords (with a map), then get the max of that..?
-jarvisMarchConstructChain :: Bool -> [Point2D] -> [Point2D] -> Point2D -> [Point2D]
-jarvisMarchConstructChain isRightChain (x:xs) [] endPoint = (x:xs)
-jarvisMarchConstructChain isRightChain (x:xs) (y:ys) endPoint =
-    if (nextHullPoint == endPoint) then
-        (x:xs)
-    else 
-        jarvisMarchConstructChain isRightChain (nextHullPoint:x:xs) (drop 1 (y:ys)) endPoint
+-- Gets the next point in the convex hull given the lowest point on the hull, a list of points already on the hull, and a list of points not in the hull
+-- broken, I think
+-- INPUT:
+--  *param1 {Point2D} (start): the starting point of the convex hull claculation. More specifically, the lowest (in terms of y [and x, if needed] coordinate)
+--  *param2 {[Point2D]} (pointsOnHull): the points already in the convex hull
+--  *param3 {[Point2D]} (restOfPoints): the points not on the convex hull (with the exception of the starting point, which should be here so the algorithm knows when to halt)
+-- OUTPUT: the convex hull calculated using the information in the parameters after recursion is said and done, hopefully
+jarvisMarchAddNextPoint :: Point2D -> [Point2D] -> [Point2D] -> [Point2D]
+jarvisMarchAddNextPoint start [] [] = []
+jarvisMarchAddNextPoint start pointsOnHull [] = pointsOnHull
+jarvisMarchAddNextPoint start pointsOnHull restOfPoints =
+    -- Stops the recursion
+    if (nextHullPoint == start) then
+        pointsOnHull
+    else
+        jarvisMarchAddNextPoint start (nextHullPoint:pointsOnHull) (removeFromList nextHullPoint restOfPoints)
     where
-        nextHullPoint = head (Data.List.sortBy (polarAngle isRightChain x) (removeFromList x (y:ys)))
+        lastHullPoint = head pointsOnHull
+        workingSet = 
+            if (lastHullPoint == start) then 
+                removeFromList start restOfPoints
+            else
+                restOfPoints
+        nextHullPoint = 
+            head (reverse (removePolarAngleDupsFromList lastHullPoint (Data.List.sortBy (polarAngle False lastHullPoint) workingSet)))
 
--- Jarvis March Function
+-- The main function of the Jarvis-March algorithm
+-- Input {[Point2D]}: a list of points you want to find the conved hull of
+-- Output: ideally, the convex hull of the set of points, if it has one
+-- [CLRS] "Introduction to Algorithms" Textbook - though I changed my implementation to something else because I thought it would work (so the implementation is not exactly from here anymore)
 jarvisMarch :: [Point2D] -> [Point2D]
 jarvisMarch points =
-    if not (enoughPoints points) then
+    if (not (enoughPoints points)) || (not (enoughPoints convexHull)) then
         []
     else
-        [minPoint] ++ (jarvisMarchConstructChain False [minPoint] points maxPoint)
-         ++
-        [maxPoint] ++ (jarvisMarchConstructChain True [maxPoint] points minPoint)
-        where
-            minPoint = getLowestPoint points
-            maxPoint = getHighestPoint points
-            -- (removeFromList maxPoint points)
-            processedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
+        convexHull
+    where
+        minPoint = getLowestPoint points
+        processedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
+        convexHull = jarvisMarchAddNextPoint minPoint [minPoint] processedPoints
+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 -- Graham's Scan - And functions specific to it's implementation                                                                                --
