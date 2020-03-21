@@ -1,7 +1,7 @@
 module AlgorithmSpec where
 {-
 - File: UnitTest.hs
-- Description: Implements unit tests for the algorithms
+- Description: Implements unit tests for the algorithms. Not sure how effective these are, but at least I got to play with them a little bit
 - Date: 3/15/2020
 -}
 
@@ -16,6 +16,7 @@ import Data.List
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
+
 
 ----------------------------------------------
 ----------------- Testing Data  --------------
@@ -35,6 +36,9 @@ testDataPoints4 = [(-1,-1),(5,5),(-1,5),(5,-1),(1,1),(2,3),(4,1),(0,1)]
 testDataPoints5 :: [Point2D]
 testDataPoints5 = [(4.0,5.0),(3.0,6.0),(1.0,9.0),(2.0,8.0),(3.0,7.0),(4.0,6.0),(5.0,5.0),(4.0,3.0),(2.0,8.0),(0.0,10.0),(15.0,7.0),(1.0,8.0)]
 
+testDataPoints6 :: [Point2D]
+testDataPoints6 = [(4.0,5.0),(5.0,4.0),(9.0,2.0),(9.0,10.0),(8.0,5.0),(3.0,6.0),(2.0,4.0),(8.0,9.0),(1.0,1.0),(0.0,0.0),(7.0,6.0),(0.0,2.0)]
+
 testDataHull1 :: [Point2D]
 testDataHull1 = []
 
@@ -48,7 +52,10 @@ testDataHull4 :: [Point2D]
 testDataHull4 = [(-1,-1),(5,5),(-1,5),(5,-1)]
 
 testDataHull5 :: [Point2D]
-testDataHull5 = [(4, 3), (0, 10), (15, 7)]
+testDataHull5 = [(4, 3), (1, 8), (0, 10), (15, 7)]
+
+testDataHull6 :: [Point2D]
+testDataHull6 = [(0,0),(0,2),(3,6),(9,10),(9,2)]
 
 
 ----------------------------------------------
@@ -134,6 +141,8 @@ spec = do
     prop "Graham's Scan on a three item set that is already a convex hull" $ (testConvexHullAlgorithm grahamsScan testDataPoints3 testDataHull3)
     prop "Graham's Scan on a normal set of points" $ (testConvexHullAlgorithm grahamsScan testDataPoints4 testDataHull4)
     prop "Graham's Scan on a different normal set of points" $ (testConvexHullAlgorithm grahamsScan testDataPoints5 testDataHull5)
+    prop "Graham's Scan on a different normal set of points" $ (testConvexHullAlgorithm grahamsScan testDataPoints6 testDataHull6)
+
 
     -- Jarvis March tests
     prop "Jarvis March Empty List" $ (testConvexHullAlgorithm jarvisMarch testDataPoints1 testDataHull1)
@@ -141,3 +150,4 @@ spec = do
     prop "Jarvis March Already-A-Hull" $ (testConvexHullAlgorithm jarvisMarch testDataPoints3 testDataHull3)
     prop "Jarvis March on a normal set of points" $ (testConvexHullAlgorithm jarvisMarch testDataPoints4 testDataHull4)
     prop "Jarvis March on a different normal set of points" $ (testConvexHullAlgorithm jarvisMarch testDataPoints5 testDataHull5)
+    prop "Graham's Scan on a different normal set of points" $ (testConvexHullAlgorithm grahamsScan testDataPoints6 testDataHull6)

@@ -39,6 +39,30 @@ type Point2D = (Number, Number)
 -- Functions Common to one or more algorithms -- 
 ------------------------------------------------
 
+-- A data.List sorting function to help us find the minimum of a set of points by y coordinate first, then by x
+-- INPUT:
+--  * param1 {Point2D}: the first point you want to compare
+--  * param2 {Point2D}: the second point you want to compare
+-- OUTPUT: an ordering of the two points
+lowest :: Point2D -> Point2D -> Ordering
+lowest (x1, y1) (x2, y2) = 
+    if (y1 < y2) then LT
+    else if (y1 > y2) then GT
+    else
+        if (x1 < x2) then LT
+        else if (x1 > x2) then GT
+        else EQ
+
+-- A wrapper function to get the lowest point of a list of points (lowest as in, point with the least y-coordinate is lowest)
+-- Helpful to avoid too much extra code
+getLowestPoint :: [Point2D] -> Point2D
+getLowestPoint listOfPoints = Data.List.minimumBy (lowest) listOfPoints
+
+-- A wrapper function to get the highest point of a list of points (highest as in, point with the greatest y-coordinate is highest)
+-- Helpful to avoid too much extra code
+getHighestPoint :: [Point2D] -> Point2D
+getHighestPoint listOfPoints = Data.List.maximumBy (lowest) listOfPoints
+
 -- Checks if there are at least three points in this list
 -- Returns true if so, false otherwise
 -- Simple enough that no test is needed
@@ -85,9 +109,10 @@ jarvisMarch points =
          ++
         [maxPoint] ++ (jarvisMarchConstructChain True [maxPoint] points minPoint)
         where
-            minPoint = Data.List.minimum points
-            maxPoint = Data.List.maximum points
+            minPoint = getLowestPoint points
+            maxPoint = getHighestPoint points
             -- (removeFromList maxPoint points)
+            processedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 -- Graham's Scan - And functions specific to it's implementation                                                                                --
@@ -114,11 +139,10 @@ removePolarAngleDupsFromList (sx, sy) ((x1,y1):(x2,y2):xs) =
     else
         [(x1,y1)] ++ (removePolarAngleDupsFromList (sx, sy) ((x2,y2):xs))
 
--- Compares the polar angles of two points with respect to a starting point and the positive x-axis, and returns an ordering specifying the result
+-- Compares the polar angles of two points with respect to a starting point and the x-axis, and returns an ordering specifying the result
 -- This is meant to be a list sorting function
 -- Input:
 --   * param1 {Bool} negateiveXAxis: a boolean indicating whether to use the negative x axis.
---       This is not being used at the moment (it was, but I changed my mind), but I left it in here to be safe
 --   * param2 {Point2D} (sx, sy): the starting point to which we base our polar angle calculations
 --   * param3 {Point2D} (x1, y1): the first point whose polar angle we will calculate and compare
 --   * param4 {Point2D} (x2, y2): the second point whose polar angle we will calculate and compare
@@ -134,16 +158,11 @@ removePolarAngleDupsFromList (sx, sy) ((x1,y1):(x2,y2):xs) =
 -- https://www.mathsisfun.com/geometry/radians.html
 polarAngle :: Bool -> Point2D -> Point2D -> Point2D -> Ordering
 polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =  
-    if (angle1 > angle2) then
-        GT
-    else if (angle1 < angle2) then
-        LT
-    else
-        EQ
+    compare angle1 angle2
     where
-        angle1 = 
-            if (y1 == sy) then 
-                if (x1 == x1 || ((not negativeXAxis) && x1 > sx) || (negativeXAxis && x1 < sx)) then
+        angle1 = atan2 (y1 - sy) (x1 - sx)
+            {-if (y1 == sy) then 
+                if (x1 == sx || {-((not negativeXAxis) &&-} x1 > sx {-}) || (negativeXAxis && x1 < sx)-}) then
                     0
                 else
                     pi
@@ -152,13 +171,13 @@ polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =
                     pi
                 else
                     (3 * pi) / 2
-            else if (x1 > sx && (not negativeXAxis)) then 
-                atan ((y1 - sy) / (x1 - sx))
+            else if (x1 > sx {-&& (not negativeXAxis)-}) then 
+                atan2 (y1 - sy) (x1 - sx)
             else 
-                3.14 - atan ((y1 - sy) / (x1 - sx))
-        angle2 = 
-            if (y2 == sy) then
-                if (x2 == x2 || ((not negativeXAxis) && x2 > sx) || (negativeXAxis && x2 < sx)) then
+                pi - (atan2 (y1 - sy) (x1 - sx))-}
+        angle2 = atan2 (y2 - sy) (x2 - sx)
+            {-if (y2 == sy) then
+                if (x2 == sx || {-((not negativeXAxis) &&-} x2 > sx{-}) || (negativeXAxis && x2 < sx)-}) then
                     0
                 else
                     pi
@@ -167,16 +186,16 @@ polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =
                     pi
                 else
                     (3 * pi) / 2
-            else if (x2 > sx && (not negativeXAxis)) then 
-                atan ((y2 - sy) / (x2 - sx))
+            else if (x2 > sx {-&& (not negativeXAxis)-}) then 
+                atan2 (y2 - sy) (x2 - sx)
             else 
-                3.14 - atan ((y2 - sy) / (x2 - sx))
+                pi - (atan2 (y2 - sy) (x2 - sx))-}
 
 -- Tells you if the lines formed by (sx, sy) and (x1, y1) and (x1, y1) and (x2, y2) make a "left turn". This is used by the Graham's Scan Algorithm
 -- Input:
 --   * param1 {Point2D} (sx, sy): the starting point from which we base our "left turn" calculation of off
---   * param2 {Point2D} (x1, y1): the first point from which we base our "left turn" calculation of off
---   * param3 {Point2D} (y2, y2): the second point from which we base our "left turn" calculation of off
+--   * param2 {Point2D} (x1, y1): the first point from which we form the first and second lines in our calculation
+--   * param3 {Point2D} (y2, y2): the second point from which we form the second and third lines of our calculation
 -- Output: true if points form a left turn. False otherwise
 -- [CLRS] "Introduction to Algorithms" Textbook
 makesLeftTurn :: Point2D -> Point2D -> Point2D -> Bool
@@ -186,33 +205,34 @@ makesLeftTurn (sx, sy) (x1, y1) (x2, y2) =
     else
         False
     where
-        x1m0 = (x1 - sx)
-        y1m0 = (y1 - sy)
-        x2m0 = (x2 - sx)
-        y2m0 = (y2 - sy)
-        crossProduct = x1m0 * y2m0 - x2m0 * y1m0 -- (p2 - p0) x (p1 - p0)
+        p2psX = x2 - sx
+        p2psY = y2 - sy
+        p1psX = x1 - sx
+        p1psY = y1 - sy
+        crossProduct = (p2psX * p1psY) - (p1psX * p2psY) -- (p2 - p0) x (p1 - p0)
 
 -- A part of the Graham's Scan algorithm that pops points off of the "stack" (list) if the two points and the given new point don't make a left turn
 -- Once it sees that you've made a right turn, it puts the new point onto the stack
 -- Input:
 --   * param1 {Point2D} (newPoint): the starting point from which we base our "left turn" calculation of off
---   * param2 {[Point2D]} (p1:p2:ps): the "stack" we will pop points off of for our left turn calculation
+--   * param2 {[Point2D]} (top:nextToTop:rest): the "stack" we will pop points off of for our left turn calculation
 -- Output: a set of points that, at the end of it's operation, will hopefully be the convex hull of a set of points
 -- [CLRS] "Introduction to Algorithms" Textbook
 gramsScanAmmendStack :: Point2D -> [Point2D] -> [Point2D]
-gramsScanAmmendStack newPoint (p1:p2:ps) = 
-    if not (makesLeftTurn newPoint p1 p2) then
-        gramsScanAmmendStack newPoint (p2:ps)
+gramsScanAmmendStack newPoint [] = [newPoint]
+gramsScanAmmendStack newPoint (top:[]) = newPoint:top:[]
+gramsScanAmmendStack newPoint (top:nextToTop:[]) = newPoint:top:nextToTop:[]
+gramsScanAmmendStack newPoint (top:nextToTop:rest) = 
+    if not (makesLeftTurn nextToTop top newPoint) then
+        gramsScanAmmendStack newPoint (nextToTop:rest)
     else
-        newPoint:p1:p2:ps
-gramsScanAmmendStack newPoint (x:xs) = (x:xs)
+        newPoint:top:nextToTop:rest
 
--- A part of the Graham's Scan algorithm that wraps and recursively calls the gramsScanAmmendStack function
--- The main gramsScan algorithm uses this
--- Once it sees that you've made a right turn, it puts the new point onto the stack
+-- A part of the Graham's Scan algorithm that wraps and recursively calls the gramsScanAmmendStack function. 
+-- It basically helps add/remove items to the list representing the sorted list of points as we process them.
 -- Input:
 --   * param1 {[Point2D]} (x:xs): a list of points representing a stack. 
---   * param2 {[Point2D]} (y:ys): 
+--   * param2 {[Point2D]} (y:ys): the list of points we have left to process
 -- Output: a set of points that, at the end of it's operation, will hopefully be the convex hull of a set of points
 -- [CLRS] "Introduction to Algorithms" Textbook
 gramScanAddNextPoint :: [Point2D] -> [Point2D] -> [Point2D]
@@ -229,10 +249,11 @@ gramScanAddNextPoint (x:xs) (y:ys) =
 -- [CLRS] "Introduction to Algorithms" Textbook
 grahamsScan :: [Point2D] -> [Point2D]
 grahamsScan points = 
-    if not (enoughPoints sortedPoints) then
+    if not (enoughPoints points) || not (enoughPoints convexHull) then
         []
     else
-        (gramScanAddNextPoint (reverse (take 3 sortedPoints)) ((drop 3 sortedPoints)))
+        convexHull
     where
-        minPoint = Data.List.minimum points
+        minPoint = getLowestPoint points
         sortedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
+        convexHull = gramScanAddNextPoint (reverse (take 3 sortedPoints)) ((drop 3 sortedPoints))
