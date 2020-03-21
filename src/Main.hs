@@ -23,20 +23,20 @@ main = do
         print exampleInput3
         putStr "\n"
 
-        -- putStrLn "Jarvis March:"
-        -- putStr "Result from data set 1: "
-        -- print (runAlgorithm "1" "1")
-        -- putStrLn "Timing: "
-        -- Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "1")
-        -- putStr "Result from data set 2: "
-        -- print (runAlgorithm "1" "2")
-        -- putStrLn "Timing: "
-        -- Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "2")
-        -- putStr "Result from data set 3: "
-        -- print (runAlgorithm "1" "3")
-        -- putStrLn "Timing: "
-        -- Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "3")
-        -- putStr "\n"
+        putStrLn "Jarvis March (not working properly):"
+        putStr "Result from data set 1: "
+        print (runAlgorithm "1" "1")
+        putStrLn "Timing: "
+        Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "1")
+        putStr "Result from data set 2: "
+        print (runAlgorithm "1" "2")
+        putStrLn "Timing: "
+        Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "2")
+        putStr "Result from data set 3: "
+        print (runAlgorithm "1" "3")
+        putStrLn "Timing: "
+        Criterion.benchmark (Criterion.whnf (runAlgorithm "1") "3")
+        putStr "\n"
 
         putStrLn "Graham's Scan:"
         putStr "Result from data set 1: "
@@ -54,7 +54,7 @@ main = do
         putStr "\n"
 
     else if (menuSelection == "2") then do
-        putStrLn "What Algorithm do you want?\n1. Jarvis March\n2. Graham's Scan\n"
+        putStrLn "What Algorithm do you want?\n1. Jarvis March (not working properly)\n2. Graham's Scan\n"
         putStrLn "Enter Selection (as an integer): "
         algorithmSelection <- getLine
         putStr "\n"

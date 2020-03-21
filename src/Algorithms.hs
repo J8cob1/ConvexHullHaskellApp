@@ -55,21 +55,31 @@ lowest (x1, y1) (x2, y2) =
 
 -- A wrapper function to get the lowest point of a list of points (lowest as in, point with the least y-coordinate is lowest)
 -- Helpful to avoid too much extra code
+-- INPUT {[Point2D]}: the list you want to get the lowest item from
+-- OUTPUT: the lowest item in the list
 getLowestPoint :: [Point2D] -> Point2D
 getLowestPoint listOfPoints = Data.List.minimumBy (lowest) listOfPoints
 
 -- A wrapper function to get the highest point of a list of points (highest as in, point with the greatest y-coordinate is highest)
 -- Helpful to avoid too much extra code
+-- INPUT {[Point2D]}: the list you want to get the highest item from
+-- OUTPUT: the highest item in the list
 getHighestPoint :: [Point2D] -> Point2D
 getHighestPoint listOfPoints = Data.List.maximumBy (lowest) listOfPoints
 
 -- Checks if there are at least three points in this list
 -- Returns true if so, false otherwise
 -- Simple enough that no test is needed
+-- INPUT {[Point2D]}: the list you want to check the size of
+-- OUTPUT: true if there at least three items. False if not
 enoughPoints :: [Point2D] -> Bool
 enoughPoints coords = (length coords) > 2
 
--- Removes a target item from a list and returns the resulting list
+-- Removes a target point from a list of points and returns the resulting list
+-- INPUT:
+--  *param1 {Point2D}: the point you want to remove
+--  *param2 {[Point2D]}: the list youwa to remove the specific point from
+-- OUTPUT: the lowest item in the list
 removeFromList :: Point2D -> [Point2D] -> [Point2D]
 removeFromList item [] = []
 removeFromList item (x:xs) = 
@@ -161,35 +171,7 @@ polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =
     compare angle1 angle2
     where
         angle1 = atan2 (y1 - sy) (x1 - sx)
-            {-if (y1 == sy) then 
-                if (x1 == sx || {-((not negativeXAxis) &&-} x1 > sx {-}) || (negativeXAxis && x1 < sx)-}) then
-                    0
-                else
-                    pi
-            else if (x1 == sx) then
-                if (y2 > sy) then
-                    pi
-                else
-                    (3 * pi) / 2
-            else if (x1 > sx {-&& (not negativeXAxis)-}) then 
-                atan2 (y1 - sy) (x1 - sx)
-            else 
-                pi - (atan2 (y1 - sy) (x1 - sx))-}
         angle2 = atan2 (y2 - sy) (x2 - sx)
-            {-if (y2 == sy) then
-                if (x2 == sx || {-((not negativeXAxis) &&-} x2 > sx{-}) || (negativeXAxis && x2 < sx)-}) then
-                    0
-                else
-                    pi
-            else if (x2 == sx) then
-                if (y2 > sy) then
-                    pi
-                else
-                    (3 * pi) / 2
-            else if (x2 > sx {-&& (not negativeXAxis)-}) then 
-                atan2 (y2 - sy) (x2 - sx)
-            else 
-                pi - (atan2 (y2 - sy) (x2 - sx))-}
 
 -- Tells you if the lines formed by (sx, sy) and (x1, y1) and (x1, y1) and (x2, y2) make a "left turn". This is used by the Graham's Scan Algorithm
 -- Input:

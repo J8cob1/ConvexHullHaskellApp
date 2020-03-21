@@ -63,11 +63,11 @@ testDataHull6 = [(0,0),(0,2),(3,6),(9,10),(9,2)]
 ----------------------------------------------
 
 -- A function to help us run Convex Hull algorithms in "spec" test at the bottom of the page
--- -Input: 
+-- Input: 
 --   * algorithm: the algorithm you want to run, as a ([Point2D] -> [Point2D])
 --   * points: the input you want to run the convex hull algorithm on, as a [Point2D]
 --   * expectedHull: the convex hull you expected  [Point2D]
--- -Output: true if running the selected algorithm on the given set of points resulted in a set of points that matched the expectedHull
+-- Output: true if running the selected algorithm on the given set of points resulted in a set of points that matched the expectedHull
 testConvexHullAlgorithm :: ([Point2D] -> [Point2D]) -> [Point2D] -> [Point2D] -> Bool
 testConvexHullAlgorithm algorithm points expectedHull = 
     (Data.List.sort expectedHull) == resultSet
@@ -75,8 +75,8 @@ testConvexHullAlgorithm algorithm points expectedHull =
         resultSet = Data.List.sort (algorithm points)
 
 -- A function to help us test the removeList functions. I think I might have had problems with lambdas
--- -Input: none
--- -Output: true if running removeList successfully removed an item from a list. This test only tests one case
+-- Input: none
+-- Output: true if running removeList successfully removed an item from a list. This test only tests one case
 testRemoveList :: Bool
 testRemoveList = 
     (Data.List.elem (4,4) listWithElementRemoved) == False
@@ -84,8 +84,8 @@ testRemoveList =
         listWithElementRemoved = removeFromList (4,4) testDataPoints3
 
 -- A function to help us test the removePolarAngleDupsFromList function
--- -Input: none
--- -Output: true if running removeList successfully removes all the duplicate items in a list stored in this function
+-- Input: none
+-- Output: true if running removeList successfully removes all the duplicate items in a list stored in this function
 testRemovePolarAngleDupsFromList :: Bool
 testRemovePolarAngleDupsFromList = 
     listWithDupsRemoved == [(-1,-1),(4,5)]
@@ -100,16 +100,16 @@ p2 = (4, 10)
 p3 = (5, 5)
 
 -- A function to help us test the polarAngle function. It should return GT in this scenario
--- -Input: none
--- -Output: true if function returned the expected result, False otherwise
+-- Input: none
+-- Output: true if function returned the expected result, False otherwise
 testPolarAnglePosGT :: Bool
 testPolarAnglePosGT = 
     -- p2 has a greater polar angle than p1 with respect to start and the positive x-axis
     (polarAngle False start p2 p1 == GT)
 
 -- A function to help us test the polarAngle function. It should return LT in this scenario
--- -Input: none
--- -Output: true if function returned the expected result, False otherwise
+-- Input: none
+-- Output: true if function returned the expected result, False otherwise
 testPolarAnglePosLT :: Bool
 testPolarAnglePosLT =
     -- p1 has a lesser polar angle with respect to start and a positive x-axis than p2
