@@ -143,7 +143,6 @@ spec = do
     prop "Graham's Scan on a different normal set of points" $ (testConvexHullAlgorithm grahamsScan testDataPoints5 testDataHull5)
     prop "Graham's Scan on a different normal set of points" $ (testConvexHullAlgorithm grahamsScan testDataPoints6 testDataHull6)
 
-
     -- Jarvis March tests
     prop "Jarvis March Empty List" $ (testConvexHullAlgorithm jarvisMarch testDataPoints1 testDataHull1)
     prop "Jarvis March Insufficient Points" $ (testConvexHullAlgorithm jarvisMarch testDataPoints2 testDataHull2)

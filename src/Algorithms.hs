@@ -89,6 +89,12 @@ removeFromList item (x:xs) =
 -----------------------------------------------------------------------------------------------------------------------------------
 
 -- Calculate polar angle form starting point for every point in coords (with a map), then get the max of that..?
+-- A Jarvis March helper function that finds a portion of the convex hull
+-- Input:
+--   * param1 {Bool} (isRightChain): specifies if we are trying to construct a left chain or a right chain
+--   * param2 {[Point2D]} ((x:x1:...:xs)): the list we rare removing polar angle duplicates from
+-- Output: true if function returned the expected result, False otherwise
+-- Presumes the items are sorted by polar angle already
 jarvisMarchConstructChain :: Bool -> [Point2D] -> [Point2D] -> Point2D -> [Point2D]
 jarvisMarchConstructChain isRightChain (x:xs) [] endPoint = (x:xs)
 jarvisMarchConstructChain isRightChain (x:xs) (y:ys) endPoint =
@@ -99,20 +105,40 @@ jarvisMarchConstructChain isRightChain (x:xs) (y:ys) endPoint =
     where
         nextHullPoint = head (Data.List.sortBy (polarAngle isRightChain x) (removeFromList x (y:ys)))
 
--- Jarvis March Function
+jarvisMarchAddNextPoint :: Point2D -> [Point2D] -> [Point2D] -> [Point2D]
+jarvisMarchAddNextPoint start [] [] = []
+jarvisMarchAddNextPoint start pointsOnHull [] = pointsOnHull
+jarvisMarchAddNextPoint start pointsOnHull restOfPoints =
+    if (nextHullPoint == start) then
+        pointsOnHull
+    else
+        jarvisMarchAddNextPoint start (nextHullPoint:pointsOnHull) (removeFromList nextHullPoint restOfPoints)
+    where
+        lastHullPoint = head pointsOnHull
+        workingSet = 
+            if (lastHullPoint == start) then 
+                removeFromList start restOfPoints
+            else
+                restOfPoints
+        nextHullPoint = 
+            head (removePolarAngleDupsFromList lastHullPoint (Data.List.sortBy (polarAngle False lastHullPoint) workingSet))
+
+-- The main function of the Jarvis March algorithm. It calculates the convex hull of a given set of points
+-- Input {[Point2D]}: a list of points you want to find the conved hull of
+-- Output: ideally, the convex hull of the set of points, if it has one
+-- [CLRS] "Introduction to Algorithms" Textbook
+-- Currently broken
 jarvisMarch :: [Point2D] -> [Point2D]
 jarvisMarch points =
-    if not (enoughPoints points) then
+    if (not (enoughPoints points)) || (not (enoughPoints convexHull)) then
         []
     else
-        [minPoint] ++ (jarvisMarchConstructChain False [minPoint] points maxPoint)
-         ++
-        [maxPoint] ++ (jarvisMarchConstructChain True [maxPoint] points minPoint)
-        where
-            minPoint = getLowestPoint points
-            maxPoint = getHighestPoint points
-            -- (removeFromList maxPoint points)
-            processedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
+        convexHull
+    where
+        minPoint = getLowestPoint points
+        processedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
+        convexHull = jarvisMarchAddNextPoint minPoint [minPoint] processedPoints
+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 -- Graham's Scan - And functions specific to it's implementation                                                                                --
@@ -161,35 +187,7 @@ polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =
     compare angle1 angle2
     where
         angle1 = atan2 (y1 - sy) (x1 - sx)
-            {-if (y1 == sy) then 
-                if (x1 == sx || {-((not negativeXAxis) &&-} x1 > sx {-}) || (negativeXAxis && x1 < sx)-}) then
-                    0
-                else
-                    pi
-            else if (x1 == sx) then
-                if (y2 > sy) then
-                    pi
-                else
-                    (3 * pi) / 2
-            else if (x1 > sx {-&& (not negativeXAxis)-}) then 
-                atan2 (y1 - sy) (x1 - sx)
-            else 
-                pi - (atan2 (y1 - sy) (x1 - sx))-}
         angle2 = atan2 (y2 - sy) (x2 - sx)
-            {-if (y2 == sy) then
-                if (x2 == sx || {-((not negativeXAxis) &&-} x2 > sx{-}) || (negativeXAxis && x2 < sx)-}) then
-                    0
-                else
-                    pi
-            else if (x2 == sx) then
-                if (y2 > sy) then
-                    pi
-                else
-                    (3 * pi) / 2
-            else if (x2 > sx {-&& (not negativeXAxis)-}) then 
-                atan2 (y2 - sy) (x2 - sx)
-            else 
-                pi - (atan2 (y2 - sy) (x2 - sx))-}
 
 -- Tells you if the lines formed by (sx, sy) and (x1, y1) and (x1, y1) and (x2, y2) make a "left turn". This is used by the Graham's Scan Algorithm
 -- Input:
@@ -243,7 +241,7 @@ gramScanAddNextPoint (x:xs) (y:ys) =
     where
         cleanedList = gramsScanAmmendStack y (x:xs)
 
--- The main function of the Graham's Scan algorithm
+-- The main function of the Graham's Scan algorithm. Calculates the convex hull of a given set of points
 -- Input {[Point2D]}: a list of points you want to find the conved hull of
 -- Output: ideally, the convex hull of the set of points, if it has one
 -- [CLRS] "Introduction to Algorithms" Textbook
