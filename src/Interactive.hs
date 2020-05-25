@@ -2,6 +2,7 @@ module Interactive where
 
 import Algorithms
 import Data.Char(digitToInt) -- https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell
+import Data.Tuple
 
 -- Data for the user facing part of this application
 datasets = [
@@ -9,24 +10,32 @@ datasets = [
     [(4.0,5.0),(3.0,6.0),(1.0,9.0),(2.0,8.0),(3.0,7.0),(4.0,6.0),(5.0,5.0),(4.0,3.0),(2.0,8.0),(0.0,10.0),(15.0,7.0),(1.0,8.0)],
     [(93.0,32.0),(65.0,65.0),(24.0,32.0),(9.0,33.0),(98.0,21.0),(23.0,43.0),(32.0,23.0),(23.0,23.0),(23.0,23.0),(22.0,23.0),(24.0,23.0),(23.0,23.0)]]
 
+-- Algorithms
+algorithms = [
+    (1, "Jarvis March", jarvisMarch),
+    (2, "Graham's Scan", grahamsScan),
+    (3, "We don't know yet!", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
+
+getThird :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> [Point2D]
+getThird (a,b,c) = c
+
 -- A function to help us execute our convex hull algorithms in the (terminal) UI of the application
 -- Input: 
 --   * algorithmSelection: a stringified integer indicating what algorithm you want to run 
 --   * inputSelection: a stringified integer used to specify what data set you want to execute your selected algorithm on
 -- Output: the restulf of the algroithm's execution 
-runAlgorithm :: String -> String -> [Point2D]
+runAlgorithm :: Char -> Char -> [Point2D]
 runAlgorithm algorithmSelection inputSelection =
-    algorithm points
+    if valid then 
+        (getThird (algorithms!!algorithmNum)) (datasets!!pointNum) -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
+    else
+        []
     where
-        algorithm =
-            case algorithmSelection of
-                "1" -> jarvisMarch
-                _ -> grahamsScan
-        points =
-            case inputSelection of
-                "1" -> datasets!!0 -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
-                "2" -> datasets!!1
-                _ -> datasets!!2
+        algorithmNum = digitToInt algorithmSelection
+        pointNum = digitToInt inputSelection
+        valid = 
+            algorithmNum <= (length algorithms) && algorithmNum > 0 &&
+            pointNum <= (length datasets) && pointNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
 
 -- A function that takes a stringified version of a list of points and parses it into a list of points
 -- https://stackoverflow.com/questions/919937/convert-a-string-list-to-an-int-list and https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell and https://wiki.haskell.org/Converting_numbers referenced
@@ -50,3 +59,16 @@ pointListUnstringify chars =
                 secondNumberAsPoint = realToFrac (digitToInt secondNumber)
         -- Anything else
         _ -> []
+
+displayMainOptions :: String
+displayMainOptions = 
+    -- https://stackoverflow.com/questions/22918837/how-can-i-write-multiline-strings-in-haskell
+    "Welcome to the Convex Hull App \
+    \ \n--------------------------------------------------- \
+    \ \n What would you like to do? \
+    \ \n     1. View available datasets \
+    \ \n     2. Add a dataset \
+    \ \n     3. Select an algorithm and a data set you want to run the algorithm on \
+    \ \n     4. Run all of the available algorithms on all the available datasets \
+    \ \n     5. Exit \
+    \ \n Enter Selection (as an integer): "
