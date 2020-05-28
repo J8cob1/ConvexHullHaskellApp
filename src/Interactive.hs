@@ -54,22 +54,21 @@ runAlgorithm algorithmSelection inputSelection =
     else
         []
     where
-        algorithmNum = digitToInt algorithmSelection!!0
-        pointNum = digitToInt inputSelection!!0
+        algorithmNum = digitToInt (algorithmSelection!!0)
+        pointNum = digitToInt (inputSelection!!0)
         valid = 
             algorithmNum <= (length algorithms) && algorithmNum > 0 &&
             pointNum <= (length datasets) && pointNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
 
-
 pointListToCleanStr :: [[Point2D]] -> String
 pointListToCleanStr [] = ""
 pointListToCleanStr (x:xs) =
-    (show x) ++ ['\n'] ++ pointListToCleanStr xs
+    (show x) ++ ['\n'] ++ pointListToCleanStr xs -- needs 1. nums
 
 displayAlgorithms :: [(Int, String, [Point2D] -> [Point2D])] -> String
 displayAlgorithms [] = ""
 displayAlgorithms (x:xs) =
-    (getfirst x) ++ " - " ++ (getSecond x) ++ ['\n'] ++ displayAlgorithms  -- https://wiki.haskell.org/How_to_work_on_lists
+    (getfirst x) ++ " - " ++ (getSecond x) ++ ['\n'] ++ displayAlgorithms xs -- https://wiki.haskell.org/How_to_work_on_lists
 
 -- A function that takes a stringified version of a list of points and parses it into a list of points
 -- https://stackoverflow.com/questions/919937/convert-a-string-list-to-an-int-list and https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell and https://wiki.haskell.org/Converting_numbers referenced

@@ -43,6 +43,7 @@ exec convexHullDataSets = do
 
     else if (menuSelection == "3") then do
         -- Run a specific algorithm on a specific dataset
+        -- Broken
         putStrLn "What Algorithm do you want?"
         putStrLn (displayAlgorithms algorithms)
         putStrLn "Enter Selection (as an integer): "
@@ -50,6 +51,7 @@ exec convexHullDataSets = do
 
         putStrLn "What dataset do you want?"
         datasetList <- readIORef convexHullDataSets
+        putStrLn (pointListToCleanStr datasetList) -- needs nums
         putStrLn "Enter Selection (as an integer):"
         dataSelection <- getLine
 
