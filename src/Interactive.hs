@@ -1,3 +1,19 @@
+-- Referenced:
+-- https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell
+-- https://wiki.haskell.org/How_to_work_on_lists
+-- https://wiki.haskell.org/Cookbook/Lists_and_strings
+-- https://stackoverflow.com/questions/5952167/how-do-i-print-a-list-in-haskell - a little maybe?
+-- https://stackoverflow.com/questions/22220439/haskell-lambda-expression
+-- https://hackage.haskell.org/package/base-4.14.0.0/docs/Data-IORef.html#g:1
+-- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
+-- https://stackoverflow.com/questions/2784271/haskell-converting-int-to-string
+-- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
+-- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
+-- https://stackoverflow.com/questions/919937/convert-a-string-list-to-an-int-list
+-- https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell
+-- https://wiki.haskell.org/Converting_numbers referenced
+-- https://stackoverflow.com/questions/22918837/how-can-i-write-multiline-strings-in-haskell
+
 module Interactive where
 
 import Algorithms
@@ -16,6 +32,13 @@ algorithms = [
     (2, "Graham's Scan", grahamsScan),
     (3, "We don't know yet!", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
 
+
+getfirst :: (Int, String, [Point2D] -> [Point2D]) -> String
+getfirst (a,b,c) = show a -- https://stackoverflow.com/questions/2784271/haskell-converting-int-to-string
+
+getSecond :: (Int, String, [Point2D] -> [Point2D]) -> String
+getSecond (a,b,c) = b
+
 getThird :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> [Point2D]
 getThird (a,b,c) = c
 
@@ -24,18 +47,29 @@ getThird (a,b,c) = c
 --   * algorithmSelection: a stringified integer indicating what algorithm you want to run 
 --   * inputSelection: a stringified integer used to specify what data set you want to execute your selected algorithm on
 -- Output: the restulf of the algroithm's execution 
-runAlgorithm :: Char -> Char -> [Point2D]
+runAlgorithm :: String -> String -> [Point2D]
 runAlgorithm algorithmSelection inputSelection =
     if valid then 
         (getThird (algorithms!!algorithmNum)) (datasets!!pointNum) -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
     else
         []
     where
-        algorithmNum = digitToInt algorithmSelection
-        pointNum = digitToInt inputSelection
+        algorithmNum = digitToInt algorithmSelection!!0
+        pointNum = digitToInt inputSelection!!0
         valid = 
             algorithmNum <= (length algorithms) && algorithmNum > 0 &&
             pointNum <= (length datasets) && pointNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
+
+
+pointListToCleanStr :: [[Point2D]] -> String
+pointListToCleanStr [] = ""
+pointListToCleanStr (x:xs) =
+    (show x) ++ ['\n'] ++ pointListToCleanStr xs
+
+displayAlgorithms :: [(Int, String, [Point2D] -> [Point2D])] -> String
+displayAlgorithms [] = ""
+displayAlgorithms (x:xs) =
+    (getfirst x) ++ " - " ++ (getSecond x) ++ ['\n'] ++ displayAlgorithms  -- https://wiki.haskell.org/How_to_work_on_lists
 
 -- A function that takes a stringified version of a list of points and parses it into a list of points
 -- https://stackoverflow.com/questions/919937/convert-a-string-list-to-an-int-list and https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell and https://wiki.haskell.org/Converting_numbers referenced

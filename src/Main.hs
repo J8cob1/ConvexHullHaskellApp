@@ -4,6 +4,7 @@ import Criterion -- for performance measurement
 import Algorithms -- Contains convex hull algorithms
 import Interactive -- Contains functions and data specific to the interactive portion of the app
 import Data.IORef
+import System.Exit
 
 -- Main is of type IO(), a Monad type
 -- MIO is the weird type of Monad
@@ -11,13 +12,9 @@ import Data.IORef
 -- Ctl k + u for comment
 -- Ctlk + u for remove comment
 
--- A mutable IORef variable
--- https://hackage.haskell.org/package/base-4.14.0.0/docs/Data-IORef.html
-dataset = newIORef datasets
-
--- Main Function
-main :: IO ()
-main = do -- figure out how do works and how to pass it in to things -JC
+-- Dataset
+exec :: (IORef [[Point2D]]) -> IO ()
+exec convexHullDataSets = do
 
     -- Print menu and get selection
     putStr(displayMainOptions)
@@ -28,49 +25,63 @@ main = do -- figure out how do works and how to pass it in to things -JC
     if (menuSelection == "1") then do
         -- View available data sets
         putStrLn "Available Data Sets:"
-        readIORef dataset -- https://stackoverflow.com/questions/5289779/printing-elements-of-a-list-on-new-lines ?
+        datasetList <- readIORef convexHullDataSets -- https://stackoverflow.com/questions/5289779/printing-elements-of-a-list-on-new-lines ?
+        putStrLn (pointListToCleanStr datasetList)
         putStr "\n"
+    
     else if (menuSelection == "2") then do
-        -- Add a dataset, then print them all out again
+        -- Add a dataset, then print them all out again -- this is broken
+        putStrLn "Enter dataset (in the form: (1,2)(3,4)... making sure to do it right. Enter anything wrong and the app can crash): \n"
         userInput <- getLine
-        writeIORef dataset (datasets ++ [(pointListUnstringify userInput)])
+        datasetList <- readIORef convexHullDataSets
+        writeIORef convexHullDataSets (datasetList ++ [(pointListUnstringify userInput)])
+        
         putStrLn "Available Data Sets:"
-        readIORef dataset -- https://stackoverflow.com/questions/5289779/printing-elements-of-a-list-on-new-lines ?
-        putStr "\n"
-    else if (menuSelection == "3") then do
-        -- Run a specific algorithm on a specific dataset
-        putStrLn "What Algorithm do you want?\n1. Jarvis March (not working properly)\n2. Graham's Scan\n"
-        putStrLn "Enter Selection (as an integer): "
-        algorithmSelection <- getChar
+        datasetList <- readIORef convexHullDataSets -- https://stackoverflow.com/questions/5289779/printing-elements-of-a-list-on-new-lines ?
+        putStrLn (pointListToCleanStr datasetList)
         putStr "\n"
 
-        -- putStrLn "What precanned data set do you want?"
-        -- putStr "1. "
-        -- print exampleInput1
-        -- putStr "2. "
-        -- print exampleInput2
-        -- putStr "3. "
-        -- print exampleInput3
-        -- putStrLn ""
-        putStrLn "Enter Selection (as an integer): \n"
+    else if (menuSelection == "3") then do
+        -- Run a specific algorithm on a specific dataset
+        putStrLn "What Algorithm do you want?"
+        putStrLn (displayAlgorithms algorithms)
+        putStrLn "Enter Selection (as an integer): "
+        algorithmSelection <- getLine
+
+        putStrLn "What dataset do you want?"
+        datasetList <- readIORef convexHullDataSets
+        putStrLn "Enter Selection (as an integer):"
         dataSelection <- getLine
 
         putStr "Results: "
-        --print (runAlgorithm algorithmSelection dataSelection)
+        print (runAlgorithm algorithmSelection dataSelection)
         putStrLn "\nTiming Information: "
-        --Criterion.benchmark (Criterion.whnf (runAlgorithm algorithmSelection) dataSelection)
+        Criterion.benchmark (Criterion.whnf (runAlgorithm algorithmSelection) dataSelection)
+
     else if (menuSelection == "4") then do
         -- Run all of the available algorithms on all the available datasets
-        putStrLn "Bye!"
+        putStrLn "Complicated"
+
     else if (menuSelection == "5") then do
         -- Exit
         putStrLn "Bye!"
+        exitSuccess
+        
     else
         -- Redo the main loop
         putStr "We don't recognize that option"
 
     -- Redo the main loop (resursively)
-    main -- https://stackoverflow.com/questions/9015318/what-to-use-instead-of-a-main-loop-in-haskell
+    exec convexHullDataSets -- https://stackoverflow.com/questions/9015318/what-to-use-instead-of-a-main-loop-in-haskell
+
+-- Main Function
+main :: IO ()
+main = do -- figure out how do works and how to pass it in to things -JC
+
+    -- A mutable IORef variable
+    -- https://hackage.haskell.org/package/base-4.14.0.0/docs/Data-IORef.html
+    convexHullData <- newIORef datasets
+    exec convexHullData
     
         -- putStrLn "Jarvis March (not working properly):"
         -- putStr "Result from data set 1: "
