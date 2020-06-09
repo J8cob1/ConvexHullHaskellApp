@@ -34,20 +34,18 @@ datasets = [
 algorithms = [
     (1, "Jarvis March", jarvisMarch),
     (2, "Graham's Scan", grahamsScan),
-    (3, "We don't know yet!", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
+    (3, "*placeholder that does nothing*", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
 
--- Functions for getting the first, second and third elements out of our tuples
--- Input: 
---   *
---   *
--- Output:
+-- Functions for getting the first, second and third elements out of our algorithms tuples
+-- Input: none
+-- Output: the first, second or third parts of the tuple
 ---------------------------------------------------------------------------------------------------------
 getfirst :: (Int, String, [Point2D] -> [Point2D]) -> String
 getfirst (a,b,c) = show a -- https://stackoverflow.com/questions/2784271/haskell-converting-int-to-string
-
+--
 getSecond :: (Int, String, [Point2D] -> [Point2D]) -> String
 getSecond (a,b,c) = b
-
+--
 getThird :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> [Point2D]
 getThird (a,b,c) = c
 
@@ -56,10 +54,10 @@ getThird (a,b,c) = c
 --   * algorithmSelection: a stringified integer indicating what algorithm you want to run 
 --   * inputSelection: a stringified integer used to specify what data set you want to execute your selected algorithm on
 -- Output: the restulf of the algroithm's execution 
-runAlgorithm :: String -> String -> [Point2D]
-runAlgorithm algorithmSelection inputSelection =
+runAlgorithm :: [[Point2D]] -> String -> String -> [Point2D]
+runAlgorithm given_datasets algorithmSelection inputSelection =
     if valid then 
-        (getThird (algorithms!!algorithmNum)) (datasets!!pointNum) -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
+        (getThird (algorithms!!(algorithmNum-1))) (given_datasets!!(pointNum-1)) -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
     else
         []
     where
@@ -67,24 +65,24 @@ runAlgorithm algorithmSelection inputSelection =
         pointNum = digitToInt (inputSelection!!0)
         valid = 
             algorithmNum <= (length algorithms) && algorithmNum > 0 &&
-            pointNum <= (length datasets) && pointNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
+            pointNum <= (length given_datasets) && pointNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
  
 --getAlgorithms :: [[Point2D] -> [Point2D]]
 --getAlgorithms = map getThird algorithms
 
--- Executes an algorithm on a dataset and returns the results, formatted as a string
+-- Executes an algorithm on a dataset and returns the results, formatted as a string. This is a part of the interactive program that executes all of the algorithms on all of the datasets
 -- Input:
---   *
---   *
+--   * algorithm - the algorithm you want to run, as a tuple element of our algorithms list
+--   * input_datasets - a list of datasets you want to run the algorithm on
 -- Output: an IO object that contains the results of the operation
 runAlgorithmOnDatasets :: (Int, String, [Point2D] -> [Point2D]) -> [[Point2D]] -> String 
 runAlgorithmOnDatasets algorithm input_datasets =
     concat (map (\dataset -> "Result of " ++ (getSecond algorithm) ++ " on dataset " ++ show dataset ++ "\n  " ++ show ((getThird algorithm) dataset) ++ "\n\n") input_datasets) -- https://stackoverflow.com/questions/36937302/concatenate-a-list-of-strings-to-one-string-haskell
 
--- Runs a benchmarking operation on a list given
+-- Runs a benchmarking operation on an algorithm executing on specific dataset
 -- Input:
---   *
---   *
+--   * algorithm - the algorithm you want to run, as a tuple element of our algorithms list
+--   * dataset - the dataset you want to run the algorithm on
 -- Output: an IO object that contains the results of the operation
 benchmarkAlgorithmOnDataset :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> IO ()
 benchmarkAlgorithmOnDataset algorithm dataset = do
@@ -94,7 +92,7 @@ benchmarkAlgorithmOnDataset algorithm dataset = do
 
 -- Run all of the algorithms we have defined on the datsets we are given
 -- Input: input_datasets - a list of points you want to run all the algorithms on
--- Output: - the output of the algorithms processed 
+-- Output: the output of the algorithms processed 
 runAllAlgorithms :: [[Point2D]] -> IO ()
 runAllAlgorithms input_datasets = do
     putStrLn "Results\n-------"
@@ -105,30 +103,25 @@ runAllAlgorithms input_datasets = do
         results = map (\algorithm -> runAlgorithmOnDatasets algorithm input_datasets) algorithms
         benchmarks = mapM_ (\algorithm -> mapM_ (benchmarkAlgorithmOnDataset algorithm) input_datasets) algorithms -- https://stackoverflow.com/questions/45194657/how-do-i-run-through-a-list-with-an-io-operation
 
--- Runs a benchmarking operation on a list given
+-- Transoforms a list of list of points into a string, for clean printing
 -- Input:
---   *
---   *
--- Output: an IO object that contains the results of the operation
-pointListToCleanStr :: [[Point2D]] -> String
-pointListToCleanStr [] = ""
-pointListToCleanStr (x:xs) =
-    (show x) ++ ['\n'] ++ pointListToCleanStr xs -- needs 1. nums
+--   * num - a number to display next to the current 
+--   * (x:xs) - the list of lists we are printing from, x being the one that we are printing in this iteration of the function
+-- Output: the stringified version of the list of list of points
+pointListToCleanStr :: Int -> [[Point2D]] -> String
+pointListToCleanStr num [] = ""
+pointListToCleanStr num (x:xs) =
+    show num ++ ". " ++ (show x) ++ "\n" ++ (pointListToCleanStr (num+1) xs) -- needs 1. nums
 
--- Runs a benchmarking operation on a list given
--- Input:
---   *
---   *
--- Output: an IO object that contains the results of the operation
-algorithmAndResultToString :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> String
-algorithmAndResultToString algoEntry result =
-    (getSecond algoEntry) ++ ['\n'] ++ show result -- copied displayAlgorithms and modified it
+-- A helper function that allow us to 
+--algorithmAndResultToString :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> String
+--algorithmAndResultToString algoEntry result =
+--    (getSecond algoEntry) ++ ['\n'] ++ show result -- copied displayAlgorithms and modified it
 
--- Runs a benchmarking operation on a list given
+-- Returning a string represenation of the list of our convex hull algorithms
 -- Input:
---   *
---   *
--- Output: an IO object that contains the results of the operation
+--   * (x:xs) - the list of algorithms we want to print out, in the form of a custom 3 item tuple
+-- Output: a stringified version of our convex hull algorithms
 displayAlgorithms :: [(Int, String, [Point2D] -> [Point2D])] -> String
 displayAlgorithms [] = ""
 displayAlgorithms (x:xs) =
@@ -157,20 +150,18 @@ pointListUnstringify chars =
         -- Anything else
         _ -> []
 
--- Displays the main options of our list
--- Input:
---   *
---   *
--- Output: an IO object that contains the results of the operation
+-- Displays the main options of our list. You could just as easily put this in the main function, but it's here at the moment
+-- Input: none
+-- Output: the main options in our program, as a string
 displayMainOptions :: String
 displayMainOptions = 
     -- https://stackoverflow.com/questions/22918837/how-can-i-write-multiline-strings-in-haskell
-    "Welcome to the Convex Hull App \
-    \ \n--------------------------------------------------- \
-    \ \n What would you like to do? \
-    \ \n     1. View available datasets \
-    \ \n     2. Add a dataset \
-    \ \n     3. Select an algorithm and a data set you want to run the algorithm on \
-    \ \n     4. Run all of the available algorithms on all the available datasets \
-    \ \n     5. Exit \
-    \ \n Enter Selection (as an integer): "
+    "--------------------------------------------------- \
+    \ \nWhat would you like to do? \
+    \ \n    1. View available datasets \
+    \ \n    2. Add a dataset \
+    \ \n    3. Select an algorithm and a data set you want to run the algorithm on \
+    \ \n    4. Run all of the available algorithms on all the available datasets \
+    \ \n    5. Exit \
+    \ \n\nEnter Selection as an integer\
+    \ \n"

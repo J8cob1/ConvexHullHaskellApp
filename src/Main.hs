@@ -20,19 +20,19 @@ exec convexHullDataSets = do
         -- View available data sets
         putStrLn "Available Data Sets:"
         datasetList <- readIORef convexHullDataSets -- https://stackoverflow.com/questions/5289779/printing-elements-of-a-list-on-new-lines ?
-        putStrLn (pointListToCleanStr datasetList)
+        putStrLn (pointListToCleanStr 1 datasetList)
         putStr "\n"
-    
+
     else if (menuSelection == "2") then do
         -- Add a dataset, then print them all out again -- this is broken
-        putStrLn "Enter dataset (in the form: (1,2)(3,4)... making sure to do it right. Enter anything wrong and the app can crash): \n"
+        putStrLn "Enter dataset (in the form: (1,2)(3,4)... making sure to do it right. Enter anything wrong and the app can crash):"
         userInput <- getLine
         datasetList <- readIORef convexHullDataSets
         writeIORef convexHullDataSets (datasetList ++ [(pointListUnstringify userInput)])
         
         putStrLn "Available Data Sets:"
         datasetList <- readIORef convexHullDataSets -- https://stackoverflow.com/questions/5289779/printing-elements-of-a-list-on-new-lines ?
-        putStrLn (pointListToCleanStr datasetList)
+        putStrLn (pointListToCleanStr 1 datasetList)
         putStr "\n"
 
     else if (menuSelection == "3") then do
@@ -45,14 +45,14 @@ exec convexHullDataSets = do
 
         putStrLn "What dataset do you want?"
         datasetList <- readIORef convexHullDataSets
-        putStrLn (pointListToCleanStr datasetList) -- needs nums
+        putStrLn (pointListToCleanStr 1 datasetList) -- needs nums
         putStrLn "Enter Selection (as an integer):"
         dataSelection <- getLine
 
-        putStr "Result:\n--------"
-        print (runAlgorithm algorithmSelection dataSelection)
+        putStrLn "Result:\n--------"
+        print (runAlgorithm datasetList algorithmSelection dataSelection)
         putStrLn "\nBenchmark:\n----------"
-        Criterion.benchmark (Criterion.whnf (runAlgorithm algorithmSelection) dataSelection)
+        Criterion.benchmark (Criterion.whnf (runAlgorithm datasetList algorithmSelection) dataSelection)
 
     else if (menuSelection == "4") then do
         -- Run all of the available algorithms on all the available datasets
