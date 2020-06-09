@@ -13,14 +13,18 @@
 -- https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell
 -- https://wiki.haskell.org/Converting_numbers referenced
 -- https://stackoverflow.com/questions/22918837/how-can-i-write-multiline-strings-in-haskell
+-- https://stackoverflow.com/questions/45194657/how-do-i-run-through-a-list-with-an-io-operation 
+-- https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:concat
 
 module Interactive where
 
 import Algorithms
 import Data.Char(digitToInt) -- https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell
 import Data.Tuple
+import Data.List(concat)
+import Criterion
 
--- Data for the user facing part of this application
+-- Data for the user facing part of this application. This is what we start with, we can add more
 datasets = [
     [(4.0,5.0),(5.0,4.0),(9.0,2.0),(9.0,10.0),(8.0,5.0),(3.0,6.0),(2.0,4.0),(8.0,9.0),(1.0,1.0),(0.0,0.0),(7.0,6.0),(0.0,2.0)],
     [(4.0,5.0),(3.0,6.0),(1.0,9.0),(2.0,8.0),(3.0,7.0),(4.0,6.0),(5.0,5.0),(4.0,3.0),(2.0,8.0),(0.0,10.0),(15.0,7.0),(1.0,8.0)],
@@ -32,7 +36,12 @@ algorithms = [
     (2, "Graham's Scan", grahamsScan),
     (3, "We don't know yet!", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
 
-
+-- Functions for getting the first, second and third elements out of our tuples
+-- Input: 
+--   *
+--   *
+-- Output:
+---------------------------------------------------------------------------------------------------------
 getfirst :: (Int, String, [Point2D] -> [Point2D]) -> String
 getfirst (a,b,c) = show a -- https://stackoverflow.com/questions/2784271/haskell-converting-int-to-string
 
@@ -59,12 +68,67 @@ runAlgorithm algorithmSelection inputSelection =
         valid = 
             algorithmNum <= (length algorithms) && algorithmNum > 0 &&
             pointNum <= (length datasets) && pointNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
+ 
+--getAlgorithms :: [[Point2D] -> [Point2D]]
+--getAlgorithms = map getThird algorithms
 
+-- Executes an algorithm on a dataset and returns the results, formatted as a string
+-- Input:
+--   *
+--   *
+-- Output: an IO object that contains the results of the operation
+runAlgorithmOnDatasets :: (Int, String, [Point2D] -> [Point2D]) -> [[Point2D]] -> String 
+runAlgorithmOnDatasets algorithm input_datasets =
+    concat (map (\dataset -> "Result of " ++ (getSecond algorithm) ++ " on dataset " ++ show dataset ++ "\n  " ++ show ((getThird algorithm) dataset) ++ "\n\n") input_datasets) -- https://stackoverflow.com/questions/36937302/concatenate-a-list-of-strings-to-one-string-haskell
+
+-- Runs a benchmarking operation on a list given
+-- Input:
+--   *
+--   *
+-- Output: an IO object that contains the results of the operation
+benchmarkAlgorithmOnDataset :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> IO ()
+benchmarkAlgorithmOnDataset algorithm dataset = do
+    putStr ("Benchmark of " ++ (getSecond algorithm) ++ " on dataset: " ++ show dataset ++ ":\n")
+    Criterion.benchmark (Criterion.whnf (getThird algorithm) dataset)
+    putStrLn ""
+
+-- Run all of the algorithms we have defined on the datsets we are given
+-- Input: input_datasets - a list of points you want to run all the algorithms on
+-- Output: - the output of the algorithms processed 
+runAllAlgorithms :: [[Point2D]] -> IO ()
+runAllAlgorithms input_datasets = do
+    putStrLn "Results\n-------"
+    putStr (concat results)
+    putStrLn "\nBenchmarks\n----------"
+    benchmarks
+    where
+        results = map (\algorithm -> runAlgorithmOnDatasets algorithm input_datasets) algorithms
+        benchmarks = mapM_ (\algorithm -> mapM_ (benchmarkAlgorithmOnDataset algorithm) input_datasets) algorithms -- https://stackoverflow.com/questions/45194657/how-do-i-run-through-a-list-with-an-io-operation
+
+-- Runs a benchmarking operation on a list given
+-- Input:
+--   *
+--   *
+-- Output: an IO object that contains the results of the operation
 pointListToCleanStr :: [[Point2D]] -> String
 pointListToCleanStr [] = ""
 pointListToCleanStr (x:xs) =
     (show x) ++ ['\n'] ++ pointListToCleanStr xs -- needs 1. nums
 
+-- Runs a benchmarking operation on a list given
+-- Input:
+--   *
+--   *
+-- Output: an IO object that contains the results of the operation
+algorithmAndResultToString :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> String
+algorithmAndResultToString algoEntry result =
+    (getSecond algoEntry) ++ ['\n'] ++ show result -- copied displayAlgorithms and modified it
+
+-- Runs a benchmarking operation on a list given
+-- Input:
+--   *
+--   *
+-- Output: an IO object that contains the results of the operation
 displayAlgorithms :: [(Int, String, [Point2D] -> [Point2D])] -> String
 displayAlgorithms [] = ""
 displayAlgorithms (x:xs) =
@@ -93,6 +157,11 @@ pointListUnstringify chars =
         -- Anything else
         _ -> []
 
+-- Displays the main options of our list
+-- Input:
+--   *
+--   *
+-- Output: an IO object that contains the results of the operation
 displayMainOptions :: String
 displayMainOptions = 
     -- https://stackoverflow.com/questions/22918837/how-can-i-write-multiline-strings-in-haskell

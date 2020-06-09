@@ -6,12 +6,6 @@ import Interactive -- Contains functions and data specific to the interactive po
 import Data.IORef
 import System.Exit
 
--- Main is of type IO(), a Monad type
--- MIO is the weird type of Monad
--- Adding main loop
--- Ctl k + u for comment
--- Ctlk + u for remove comment
-
 -- Dataset
 exec :: (IORef [[Point2D]]) -> IO ()
 exec convexHullDataSets = do
@@ -55,14 +49,16 @@ exec convexHullDataSets = do
         putStrLn "Enter Selection (as an integer):"
         dataSelection <- getLine
 
-        putStr "Results: "
+        putStr "Result:\n--------"
         print (runAlgorithm algorithmSelection dataSelection)
-        putStrLn "\nTiming Information: "
+        putStrLn "\nBenchmark:\n----------"
         Criterion.benchmark (Criterion.whnf (runAlgorithm algorithmSelection) dataSelection)
 
     else if (menuSelection == "4") then do
         -- Run all of the available algorithms on all the available datasets
-        putStrLn "Complicated"
+        datasetList <- readIORef convexHullDataSets
+        runAllAlgorithms datasetList
+        putStrLn ""
 
     else if (menuSelection == "5") then do
         -- Exit
@@ -71,7 +67,7 @@ exec convexHullDataSets = do
         
     else
         -- Redo the main loop
-        putStr "We don't recognize that option"
+        putStr "We don't recognize that option. Try again"
 
     -- Redo the main loop (resursively)
     exec convexHullDataSets -- https://stackoverflow.com/questions/9015318/what-to-use-instead-of-a-main-loop-in-haskell
