@@ -5,6 +5,7 @@ import Algorithms -- Contains convex hull algorithms
 import Interactive -- Contains functions and data specific to the interactive portion of the app
 import Data.IORef
 import System.Exit
+import Data.Char(digitToInt)
 
 -- Dataset
 exec :: (IORef [[Point2D]]) -> IO ()
@@ -34,10 +35,32 @@ exec convexHullDataSets = do
         datasetList <- readIORef convexHullDataSets -- https://stackoverflow.com/questions/5289779/printing-elements-of-a-list-on-new-lines ?
         putStrLn (pointListToCleanStr 1 datasetList)
         putStr "\n"
-
+    
     else if (menuSelection == "3") then do
+        -- Randomly generate a new dataset (easier than typing on out yourself)
+
+        -- Get user Input
+        putStrLn "Please enter X and Y coordinate upper limit, as an integer: "
+        upperLimit <- getLine
+
+        putStrLn "Please enter X and Y coordinate lower limit, as an integer: "
+        lowerLimit <- getLine
+
+        putStrLn "Please enter the number of points you want to generate, as an integer: "
+        numPoints <- getLine
+
+        -- Generate new set and put it into the list
+        newDataSet <- generateRandomDataSet upperLimit lowerLimit (read numPoints :: Int)
+        currentDataSet <- readIORef convexHullDataSets
+        writeIORef convexHullDataSets (currentDataSet ++ [newDataSet])
+
+        -- Print out the new list so the user can see it
+        putStrLn "Available Data Sets:"
+        putStrLn (pointListToCleanStr 1 (currentDataSet ++ [newDataSet]))
+        putStr "\n"
+
+    else if (menuSelection == "4") then do
         -- Run a specific algorithm on a specific dataset
-        -- Broken
         putStrLn "What Algorithm do you want?"
         putStrLn (displayAlgorithms algorithms)
         putStrLn "Enter Selection (as an integer): "
@@ -49,22 +72,22 @@ exec convexHullDataSets = do
         putStrLn "Enter Selection (as an integer):"
         dataSelection <- getLine
 
-        putStrLn "Result:\n--------"
+        putStrLn "Result:\n-------"
         print (runAlgorithm datasetList algorithmSelection dataSelection)
         putStrLn "\nBenchmark:\n----------"
         Criterion.benchmark (Criterion.whnf (runAlgorithm datasetList algorithmSelection) dataSelection)
 
-    else if (menuSelection == "4") then do
+    else if (menuSelection == "5") then do
         -- Run all of the available algorithms on all the available datasets
         datasetList <- readIORef convexHullDataSets
         runAllAlgorithms datasetList
         putStrLn ""
 
-    else if (menuSelection == "5") then do
+    else if (menuSelection == "6") then do
         -- Exit
         putStrLn "Bye!"
         exitSuccess
-        
+
     else
         -- Redo the main loop
         putStr "We don't recognize that option. Try again"

@@ -15,6 +15,7 @@
 -- https://stackoverflow.com/questions/22918837/how-can-i-write-multiline-strings-in-haskell
 -- https://stackoverflow.com/questions/45194657/how-do-i-run-through-a-list-with-an-io-operation 
 -- https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:concat
+-- https://stackoverflow.com/questions/59618016/haskell-cant-import-system-random
 
 module Interactive where
 
@@ -23,6 +24,7 @@ import Data.Char(digitToInt) -- https://stackoverflow.com/questions/53186296/con
 import Data.Tuple
 import Data.List(concat)
 import Criterion
+import System.Random
 
 -- Data for the user facing part of this application. This is what we start with, we can add more
 datasets = [
@@ -160,8 +162,32 @@ displayMainOptions =
     \ \nWhat would you like to do? \
     \ \n    1. View available datasets \
     \ \n    2. Add a dataset \
-    \ \n    3. Select an algorithm and a data set you want to run the algorithm on \
-    \ \n    4. Run all of the available algorithms on all the available datasets \
-    \ \n    5. Exit \
+    \ \n    3. Randomly generate a new dataset \
+    \ \n    4. Select an algorithm and a data set you want to run the algorithm on \
+    \ \n    5. Run all of the available algorithms on all the available datasets \
+    \ \n    6. Exit \
     \ \n\nEnter Selection as an integer\
     \ \n"
+
+-- Generates a random list of points
+-- Input: 
+--   * upperLimit - the upper limit of the x and y coordinates that can be generated for this list
+--   * lowerLimit - the lower limit of the x and y coordinates that can be generated for this list
+--   * numPoints - the number of points you want in the list
+-- Output: the dataset that was just generated
+-- https://hackage.haskell.org/package/random-1.1/docs/System-Random.html#v:next
+-- https://stackoverflow.com/questions/42975088/how-to-convert-from-float-to-int-in-haskell
+-- https://stackoverflow.com/questions/36903738/no-instance-for-integral-double-arising-from-a-use-of-rem
+-- https://hackage.haskell.org/package/base-4.14.0.0/docs/Prelude.html#t:Integral
+generateRandomDataSet :: String -> String -> Int -> IO [Point2D]
+generateRandomDataSet upperLimit lowerLimit numPoints = do
+    if (numPoints > 0) then do
+        xCoord <- getStdRandom (randomR (lower,upper))
+        yCoord <- getStdRandom (randomR (lower,upper))
+        otherPoints <- (generateRandomDataSet upperLimit lowerLimit (numPoints - 1))
+        return ([(fromIntegral (round xCoord), fromIntegral (round yCoord))] ++ otherPoints) -- https://stackoverflow.com/questions/18280844/converting-integer-to-double-in-haskell#:~:text=1%20Answer&text=The%20usual%20way%20to%20convert,which%20Double%20is%20an%20instance.
+    else
+        return []
+    where
+        lower = read lowerLimit :: Number -- https://stackoverflow.com/questions/20667478/haskell-string-int-type-conversion
+        upper = read upperLimit :: Number
