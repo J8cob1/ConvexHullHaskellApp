@@ -29,11 +29,83 @@ module Algorithms where
 -- Imports
 import Data.List
 
--- Typedefs
+-- Typedefs adn custom types
 type Number = Double
 type Point2D = (Number, Number)
+type Line = (Point2D, Point2D)
+data PointPosition = Left | Right | Same
 
 
+-- Functions --
+
+-- Takes a tuple of two points (that form a line), and a third point and determines whether the point is on the left or right side of the line
+-- Input:
+--   * ((l1x,l1y),(l2x,l2y)) - the two points that form the line
+--   * (px, py) - the point outside the line
+-- Output: Left if the point is on the left of the line, or Right if it is on the right
+-- [CLRS] "Introduction to Algorithms" Textbook
+-- https://www.youtube.com/watch?v=Vu84lmMzP2o
+sideOfLine :: Line -> Point2D -> PointPosition
+sideOfLine ((l1x,l1y),(l2x,l2y)) (px, py) =
+    -- Do a cross product
+    if (crossProduct > 0) then
+        Left
+    else if (crossProduct < 0)
+        Right
+    else
+        Same
+    where
+        p2psX = px - l1x
+        p2psY = py - l1y
+        p1psX = l2x - l1x
+        p1psY = l2y - l1y
+        crossProduct = (p2psX * p1psY) - (p1psX * p2psY) -- (p2 - p0) x (p1 - p0)
+
+return a list that hackage
+getRightMostPoint :: 
+getLeftMostPoint =
+    any (\x -> (sideOfLine line x) == Right) listOfPoints
+
+-- Go through a list of points and find the point whose line is on the left side
+search :: Line -> [Point2D] -> [Point2D] -> Point2D
+search _ [] _ = True
+search _ _ [] = True
+search line points (x:xs) = 
+    any (\x -> (sideOfLine line x) == False) listOfPoints
+    -- Left of point
+    if (sideOfLine line x) then
+        if leftside of x is left
+
+    else
+        sideOfLine
+
+-- Jarvis March Algorithm
+-- Get point on hull
+-- Get rightmost/leftmost point after that
+-- Keep going until you build the hull
+jarvisMarch :: [Point2D] -> [Point2D]
+jarvisMarch [] = []
+jarvisMarch (x,y,[]) = []
+jarvisMarch (x:y:z:xs) = 
+    jarvisMarch = dsfdfd
+    where
+        nextPoint
+
+jarvisMarchGetNext :: [Point2D] -> [Point2D] -> [Point2D]
+jarvisMarchGetNext known_points [] = []
+jarvisMarchGetNext known_points (x,y,[]) = []
+jarvisMarchGetNext known_points (x:y:z:xs) = 
+    -- First case is different if there are less than two points in the convex hull
+    if length known_points < 2 then
+        for all points in x1
+            if any (\x -> (sideOfLine line x) == Right) listOfPoints then return false
+    else
+        sdf
+    where
+        starting_point = head known_points
+        checkNextPoint = any (\x -> (sideOfLine line x) == Right) listOfPoints
+
+    
 
 ------------------------------------------------
 -- Functions Common to one or more algorithms -- 
@@ -89,8 +161,6 @@ removeFromList item (x:xs) =
         [x] ++ (removeFromList item xs)
 
 
-
-
 -----------------------------------------------------------------------------------------------------------------------------------
 -- Jarvis March - And functions specific to implementation                                                                       --
 -- Jarvis March is a simple convex hull algorithm where we "gift warp"? our way around the set of points to find the convex hull --
@@ -139,6 +209,9 @@ jarvisMarch points =
         processedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
         convexHull = jarvisMarchAddNextPoint minPoint [minPoint] processedPoints
 
+-- ALgorithm: 
+-- 1. start with the leftmost point
+-- 2. 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 -- Graham's Scan - And functions specific to it's implementation                                                                                --
