@@ -52,33 +52,38 @@ getSecond (a,b,c) = b
 getThird :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> [Point2D]
 getThird (a,b,c) = c
 
---getAlgorithmTitle :: String -> String
---getAlgorithmTitle selection = 
---    if (algorithmNum <= (length algorithms) && algorithmNum > 0 &&) then
---        
---    else
---        ""
---    where
---        algorithmNum = digitToInt (algorithmSelection!!0)
-
--- A function to help us execute our convex hull algorithms in the (terminal) UI of the application
+-- A function to help us execute a specific convex hull algorithm on a specific dataset
 -- Input: 
 --   * algorithmSelection: a stringified integer indicating what algorithm you want to run 
 --   * inputSelection: a stringified integer used to specify what data set you want to execute your selected algorithm on
--- Output: the restulf of the algroithm's execution 
-runAlgorithm :: [[Point2D]] -> String -> String -> [Point2D]
+-- Output: 
+runAlgorithm :: [[Point2D]] -> String -> String -> IO ()
 runAlgorithm given_datasets algorithmSelection inputSelection =
-    if valid then 
-        (getThird (algorithms!!(algorithmNum-1))) (given_datasets!!(pointNum-1)) -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
-    else
-        []
+    runAlgorithmAndDrawChart (algorithms!!(algorithmNum-1)) (datasetNum, (given_datasets!!(datasetNum-1))) -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
     where
-        algorithmNum = digitToInt (algorithmSelection!!0)
-        pointNum = digitToInt (inputSelection!!0)
+        algorithmNum = read algorithmSelection :: Int
+        datasetNum = read inputSelection :: Int
+
+-- A function that verifies user input for selection of an algorithm and dataset to run
+-- Input:
+--   * given_datasets - a set of datasets that the user is choosing from
+--   * algorithm_selection - a string representing what algorithm the user chose
+--   * datasetSelection - a string that indicates what item of the dataset the user chose
+-- Output: whether the user made an appropriate algorithm and datset selection or not
+verifySelection :: [[Point2D]] -> String -> String -> Bool
+verifySelection given_datasets algorithmSelection datasetSelection =
+    if (valid) then
+        True
+    else
+        False
+    where
+        algorithmNum = read algorithmSelection :: Int
+        datasetNum = read datasetSelection :: Int
         valid = 
             algorithmNum <= (length algorithms) && algorithmNum > 0 &&
-            pointNum <= (length given_datasets) && pointNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
- 
+            datasetNum <= (length given_datasets) && datasetNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
+        
+
 --getAlgorithms :: [[Point2D] -> [Point2D]]
 --getAlgorithms = map getThird algorithms
 
@@ -164,6 +169,7 @@ displayAlgorithms (x:xs) =
 -- Input: the string representing the list of points you want unstringified
 -- Output: the list of points
 -- List parsing does everything!
+-- Terrible
 pointListUnstringify :: [Char] -> [Point2D]
 pointListUnstringify chars =
     case chars of
