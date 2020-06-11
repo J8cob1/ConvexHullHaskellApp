@@ -3,9 +3,11 @@ module Main where
 import Criterion -- for performance measurement
 import Algorithms -- Contains convex hull algorithms
 import Interactive -- Contains functions and data specific to the interactive portion of the app
+import Charting
 import Data.IORef
 import System.Exit
 import Data.Char(digitToInt)
+import Data.List
 
 -- Dataset
 exec :: (IORef [[Point2D]]) -> IO ()
@@ -72,10 +74,18 @@ exec convexHullDataSets = do
         putStrLn "Enter Selection (as an integer):"
         dataSelection <- getLine
 
+        -- Print result and draw chart
         putStrLn "Result:\n-------"
         print (runAlgorithm datasetList algorithmSelection dataSelection)
+        --drawChart 
+        --    ((datasetList!!0) \\ (runAlgorithm datasetList algorithmSelection dataSelection)) -- All points not in the hull
+        --    ((runAlgorithm datasetList algorithmSelection dataSelection) ++ head ((runAlgorithm datasetList algorithmSelection dataSelection)))  -- Points in the hull, with the head added to the end so that we draw a complete polygon
+        --    "Result of Graham's Scan on Dataset\n" ++  -- Chart Title
+
         putStrLn "\nBenchmark:\n----------"
         Criterion.benchmark (Criterion.whnf (runAlgorithm datasetList algorithmSelection) dataSelection)
+
+
 
     else if (menuSelection == "5") then do
         -- Run all of the available algorithms on all the available datasets

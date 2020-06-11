@@ -20,9 +20,10 @@
 module Interactive where
 
 import Algorithms
+import Charting
 import Data.Char(digitToInt) -- https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell
 import Data.Tuple
-import Data.List(concat)
+import Data.List
 import Criterion
 import System.Random
 
@@ -36,7 +37,7 @@ datasets = [
 algorithms = [
     (1, "Jarvis March", jarvisMarch),
     (2, "Graham's Scan", grahamsScan),
-    (3, "*placeholder that does nothing*", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
+    (3, "placeholder", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
 
 -- Functions for getting the first, second and third elements out of our algorithms tuples
 -- Input: none
@@ -50,6 +51,15 @@ getSecond (a,b,c) = b
 --
 getThird :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> [Point2D]
 getThird (a,b,c) = c
+
+--getAlgorithmTitle :: String -> String
+--getAlgorithmTitle selection = 
+--    if (algorithmNum <= (length algorithms) && algorithmNum > 0 &&) then
+--        
+--    else
+--        ""
+--    where
+--        algorithmNum = digitToInt (algorithmSelection!!0)
 
 -- A function to help us execute our convex hull algorithms in the (terminal) UI of the application
 -- Input: 
@@ -92,17 +102,37 @@ benchmarkAlgorithmOnDataset algorithm dataset = do
     Criterion.benchmark (Criterion.whnf (getThird algorithm) dataset)
     putStrLn ""
 
+-- Runs and algorithm, prints the results, and draws a chart showing the results of each run
+-- Input:
+--   * algorithm - the algorithm you want to run, as a tuple element of our algorithms list
+--   * dataset - the dataset you want to run the algorithm on. Comes as a tuple. The first part is an index to represent the list, the second is a tuple
+-- Output: an IO object we need to return so it can get executed in the main function
+runAlgorithmAndDrawChart :: (Int, String, [Point2D] -> [Point2D]) -> (Int, [Point2D]) -> IO ()
+runAlgorithmAndDrawChart algorithm dataset = do
+    putStr ("Result of " ++ (getSecond algorithm) ++ " on dataset " ++ show input ++ "\n  " ++ show result ++ "\n\n")
+    drawChart 
+        (input \\ result) -- All points not in the hull
+        result  -- Points in the hull, with the head added to the end so that we draw a complete polygon
+        ("Result of " ++ (getSecond algorithm) ++ " on Dataset " ++ show index) -- Chart Title
+        ((getSecond algorithm) ++ " on dataset " ++ show index) -- Chart Filename
+    where
+        result = ((getThird algorithm) input)
+        input = snd dataset -- https://stackoverflow.com/questions/5844347/accessing-a-specific-element-in-a-tuple
+        index = fst dataset
+
 -- Run all of the algorithms we have defined on the datsets we are given
 -- Input: input_datasets - a list of points you want to run all the algorithms on
 -- Output: the output of the algorithms processed 
 runAllAlgorithms :: [[Point2D]] -> IO ()
 runAllAlgorithms input_datasets = do
     putStrLn "Results\n-------"
-    putStr (concat results)
+    --putStr (concat results) -- show all the results
+    chartdraw -- draw charts
     putStrLn "\nBenchmarks\n----------"
-    benchmarks
+    benchmarks -- show benchmarks
     where
-        results = map (\algorithm -> runAlgorithmOnDatasets algorithm input_datasets) algorithms
+        --results = map (\algorithm -> runAlgorithmOnDatasets algorithm input_datasets) algorithms
+        chartdraw = mapM_ (\algorithm -> mapM_ (runAlgorithmAndDrawChart algorithm) (zip [1..] input_datasets)) algorithms -- https://stackoverflow.com/questions/9749904/what-is-a-good-way-to-generate-a-infinite-list-of-all-integers-in-haskell
         benchmarks = mapM_ (\algorithm -> mapM_ (benchmarkAlgorithmOnDataset algorithm) input_datasets) algorithms -- https://stackoverflow.com/questions/45194657/how-do-i-run-through-a-list-with-an-io-operation
 
 -- Transoforms a list of list of points into a string, for clean printing
