@@ -20,9 +20,10 @@
 module Interactive where
 
 import Algorithms
+import Charting
 import Data.Char(digitToInt) -- https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell
 import Data.Tuple
-import Data.List(concat)
+import Data.List
 import Criterion
 import System.Random
 
@@ -36,7 +37,7 @@ datasets = [
 algorithms = [
     (1, "Jarvis March", jarvisMarch),
     (2, "Graham's Scan", grahamsScan),
-    (3, "*placeholder that does nothing*", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
+    (3, "placeholder", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
 
 -- Functions for getting the first, second and third elements out of our algorithms tuples
 -- Input: none
@@ -51,24 +52,38 @@ getSecond (a,b,c) = b
 getThird :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> [Point2D]
 getThird (a,b,c) = c
 
--- A function to help us execute our convex hull algorithms in the (terminal) UI of the application
+-- A function to help us execute a specific convex hull algorithm on a specific dataset
 -- Input: 
 --   * algorithmSelection: a stringified integer indicating what algorithm you want to run 
 --   * inputSelection: a stringified integer used to specify what data set you want to execute your selected algorithm on
--- Output: the restulf of the algroithm's execution 
-runAlgorithm :: [[Point2D]] -> String -> String -> [Point2D]
+-- Output: 
+runAlgorithm :: [[Point2D]] -> String -> String -> IO ()
 runAlgorithm given_datasets algorithmSelection inputSelection =
-    if valid then 
-        (getThird (algorithms!!(algorithmNum-1))) (given_datasets!!(pointNum-1)) -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
-    else
-        []
+    runAlgorithmAndDrawChart (algorithms!!(algorithmNum-1)) (datasetNum, (given_datasets!!(datasetNum-1))) -- https://stackoverflow.com/questions/5217171/how-can-i-get-nth-element-from-a-list
     where
-        algorithmNum = digitToInt (algorithmSelection!!0)
-        pointNum = digitToInt (inputSelection!!0)
+        algorithmNum = read algorithmSelection :: Int
+        datasetNum = read inputSelection :: Int
+
+-- A function that verifies user input for selection of an algorithm and dataset to run
+-- Input:
+--   * given_datasets - a set of datasets that the user is choosing from
+--   * algorithm_selection - a string representing what algorithm the user chose
+--   * datasetSelection - a string that indicates what item of the dataset the user chose
+-- Output: whether the user made an appropriate algorithm and datset selection or not
+verifySelection :: [[Point2D]] -> String -> String -> Bool
+verifySelection given_datasets algorithmSelection datasetSelection =
+    if (valid) then
+        True
+    else
+        False
+    where
+        algorithmNum = read algorithmSelection :: Int
+        datasetNum = read datasetSelection :: Int
         valid = 
             algorithmNum <= (length algorithms) && algorithmNum > 0 &&
-            pointNum <= (length given_datasets) && pointNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
- 
+            datasetNum <= (length given_datasets) && datasetNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
+        
+
 --getAlgorithms :: [[Point2D] -> [Point2D]]
 --getAlgorithms = map getThird algorithms
 
@@ -92,17 +107,37 @@ benchmarkAlgorithmOnDataset algorithm dataset = do
     Criterion.benchmark (Criterion.whnf (getThird algorithm) dataset)
     putStrLn ""
 
+-- Runs and algorithm, prints the results, and draws a chart showing the results of each run
+-- Input:
+--   * algorithm - the algorithm you want to run, as a tuple element of our algorithms list
+--   * dataset - the dataset you want to run the algorithm on. Comes as a tuple. The first part is an index to represent the list, the second is a tuple
+-- Output: an IO object we need to return so it can get executed in the main function
+runAlgorithmAndDrawChart :: (Int, String, [Point2D] -> [Point2D]) -> (Int, [Point2D]) -> IO ()
+runAlgorithmAndDrawChart algorithm dataset = do
+    putStr ("Result of " ++ (getSecond algorithm) ++ " on dataset " ++ show input ++ "\n  " ++ show result ++ "\n\n")
+    drawChart 
+        (input \\ result) -- All points not in the hull
+        result  -- Points in the hull, with the head added to the end so that we draw a complete polygon
+        ("Result of " ++ (getSecond algorithm) ++ " on Dataset " ++ show index) -- Chart Title
+        ((getSecond algorithm) ++ " on dataset " ++ show index) -- Chart Filename
+    where
+        result = ((getThird algorithm) input)
+        input = snd dataset -- https://stackoverflow.com/questions/5844347/accessing-a-specific-element-in-a-tuple
+        index = fst dataset
+
 -- Run all of the algorithms we have defined on the datsets we are given
 -- Input: input_datasets - a list of points you want to run all the algorithms on
 -- Output: the output of the algorithms processed 
 runAllAlgorithms :: [[Point2D]] -> IO ()
 runAllAlgorithms input_datasets = do
     putStrLn "Results\n-------"
-    putStr (concat results)
+    --putStr (concat results) -- show all the results
+    chartdraw -- draw charts
     putStrLn "\nBenchmarks\n----------"
-    benchmarks
+    benchmarks -- show benchmarks
     where
-        results = map (\algorithm -> runAlgorithmOnDatasets algorithm input_datasets) algorithms
+        --results = map (\algorithm -> runAlgorithmOnDatasets algorithm input_datasets) algorithms
+        chartdraw = mapM_ (\algorithm -> mapM_ (runAlgorithmAndDrawChart algorithm) (zip [1..] input_datasets)) algorithms -- https://stackoverflow.com/questions/9749904/what-is-a-good-way-to-generate-a-infinite-list-of-all-integers-in-haskell
         benchmarks = mapM_ (\algorithm -> mapM_ (benchmarkAlgorithmOnDataset algorithm) input_datasets) algorithms -- https://stackoverflow.com/questions/45194657/how-do-i-run-through-a-list-with-an-io-operation
 
 -- Transoforms a list of list of points into a string, for clean printing
@@ -134,6 +169,7 @@ displayAlgorithms (x:xs) =
 -- Input: the string representing the list of points you want unstringified
 -- Output: the list of points
 -- List parsing does everything!
+-- Terrible
 pointListUnstringify :: [Char] -> [Point2D]
 pointListUnstringify chars =
     case chars of
