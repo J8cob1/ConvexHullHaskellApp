@@ -29,11 +29,100 @@ module Algorithms where
 -- Imports
 import Data.List
 
--- Typedefs
+-- Typedefs and custom types
 type Number = Double
 type Point2D = (Number, Number)
+type Line = (Point2D, Point2D)
+data PointPosition = Left | Right | OnLine | Bottom | Top deriving (Eq)-- this is used for multiple purposes. https://stackoverflow.com/questions/28396572/how-i-can-compare-a-variable-with-a-data-type-in-haskell 
 
+-- Functions --
 
+-- Takes a tuple of two points (that form a line), and a third point and determines whether the point is on the left or right side of the line
+-- Input:
+--   * ((l1x,l1y),(l2x,l2y)) - the two points that form the line
+--   * (px, py) - the point outside the line
+-- Output: Left if the point is on the left of the line, or Right if it is on the right
+-- [CLRS] "Introduction to Algorithms" Textbook
+-- https://www.youtube.com/watch?v=Vu84lmMzP2o
+sideOfLine :: Line -> Point2D -> PointPosition
+sideOfLine ((l1x,l1y),(l2x,l2y)) (px, py) =
+    -- Do a cross product
+    if (crossProduct > 0) then
+        Algorithms.Left
+    else if (crossProduct < 0) then
+        Algorithms.Right
+    else
+        Algorithms.OnLine
+    where
+        p2psX = px - l1x
+        p2psY = py - l1y
+        p1psX = l2x - l1x
+        p1psY = l2y - l1y
+        crossProduct = (p2psX * p1psY) - (p1psX * p2psY) -- (p2 - p0) x (p1 - p0)
+
+-- Similar to side of line, except that it takes a point position as an argument and returns true if the point is ineed
+-- onSideOfLine :: Line -> Point2D -> PointPosition -> Bool
+-- onSideOfLine ((l1x,l1y),(l2x,l2y)) (px, py) side =
+--     -- Do a cross product
+--     if (crossProduct > 0) then
+--         side == Left
+--     else if (crossProduct < 0)
+--         side == Right
+--     else
+--         side == OnLine
+--     where
+--         p2psX = px - l1x
+--         p2psY = py - l1y
+--         p1psX = l2x - l1x
+--         p1psY = l2y - l1y
+--         crossProduct = (p2psX * p1psY) - (p1psX * p2psY) -- (p2 - p0) x (p1 - p0)
+
+-- Takes a list of points, a line, and a point psoition and tells you if any of them points in the point list are on the "point position" side of the list
+-- Input:
+-- Output:
+--anyPointsOnSideOfLine :: [Point2D] -> Line -> PointPosition -> Bool 
+--anyPointsOnSideOfLine listOfPoints line side =
+--    any (\point -> (sideOfLine line point) == side) listOfPoints
+
+-- Go through a list of points and find the point whose line is on the left side
+--search :: Line -> [Point2D] -> [Point2D] -> Point2D
+--search _ [] _ = True
+--search _ _ [] = True
+--search line points (x:xs) = 
+--    any (\x -> (sideOfLine line x) == False) listOfPoints
+    -- Left of point
+--    if (sideOfLine line x) then
+--        if leftside of x is left
+--    else
+--        sideOfLine
+
+-- Jarvis March Algorithm
+-- Get point on hull
+-- Get rightmost/leftmost point after that
+-- Keep going until you build the hull
+--jarvisMarch :: [Point2D] -> [Point2D]
+--jarvisMarch [] = []
+--jarvisMarch (x,y,[]) = []
+--jarvisMarch (x:y:z:xs) = 
+--    jarvisMarch = dsfdfd
+--    where
+--        nextPoint
+
+--jarvisMarchGetNext :: [Point2D] -> [Point2D] -> [Point2D]
+--jarvisMarchGetNext known_points [] = []
+--jarvisMarchGetNext known_points (x,y,[]) = []
+--jarvisMarchGetNext known_points (x:y:z:xs) = 
+--    -- First case is different if there are less than two points in the convex hull
+--    if length known_points < 2 then
+--        for all points in x1
+--            if any (\x -> (sideOfLine line x) == Right) listOfPoints then return false
+--    else
+--        sdf
+--    where
+--        starting_point = head known_points
+--        checkNextPoint = any (\x -> (sideOfLine line x) == Right) listOfPoints
+
+    
 
 ------------------------------------------------
 -- Functions Common to one or more algorithms -- 
@@ -44,28 +133,41 @@ type Point2D = (Number, Number)
 --  * param1 {Point2D}: the first point you want to compare
 --  * param2 {Point2D}: the second point you want to compare
 -- OUTPUT: an ordering of the two points
-lowest :: Point2D -> Point2D -> Ordering
-lowest (x1, y1) (x2, y2) = 
-    if (y1 < y2) then LT
-    else if (y1 > y2) then GT
-    else
-        if (x1 < x2) then LT
-        else if (x1 > x2) then GT
-        else EQ
+farthest :: PointPosition -> Point2D -> Point2D -> Ordering
+farthest position (x1, y1) (x2, y2) =
+    case position of
+        Algorithms.Left -> -- Sorts results in: most left on right, Least left on left
+            compare (x2, y2) (x1, y1) 
+        Algorithms.Right ->  -- Sorts results in: most right on right, Least right on left
+            compare (x1, y1) (x2, y2)
+        Algorithms.Top -> -- Sorts results in: most top on right, Least top on left
+            if (y1 < y2) then LT
+            else if (y1 > y2) then GT
+            else
+                if (x1 < x2) then LT
+                else if (x1 > x2) then GT
+                else EQ
+        _ -> -- Default for "OnLine" and "Bottom" is bottom
+            if (y1 < y2) then GT
+            else if (y1 > y2) then LT
+            else
+                if (x1 < x2) then LT
+                else if (x1 > x2) then GT
+                else EQ
 
 -- A wrapper function to get the lowest point of a list of points (lowest as in, point with the least y-coordinate is lowest)
 -- Helpful to avoid too much extra code
 -- INPUT {[Point2D]}: the list you want to get the lowest item from
 -- OUTPUT: the lowest item in the list
 getLowestPoint :: [Point2D] -> Point2D
-getLowestPoint listOfPoints = Data.List.minimumBy (lowest) listOfPoints
+getLowestPoint listOfPoints = Data.List.minimumBy (farthest Top) listOfPoints
 
 -- A wrapper function to get the highest point of a list of points (highest as in, point with the greatest y-coordinate is highest)
 -- Helpful to avoid too much extra code
 -- INPUT {[Point2D]}: the list you want to get the highest item from
 -- OUTPUT: the highest item in the list
 getHighestPoint :: [Point2D] -> Point2D
-getHighestPoint listOfPoints = Data.List.maximumBy (lowest) listOfPoints
+getHighestPoint listOfPoints = Data.List.maximumBy (farthest Top) listOfPoints
 
 -- Checks if there are at least three points in this list
 -- Returns true if so, false otherwise
@@ -87,8 +189,6 @@ removeFromList item (x:xs) =
         xs
     else
         [x] ++ (removeFromList item xs)
-
-
 
 
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -139,6 +239,9 @@ jarvisMarch points =
         processedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
         convexHull = jarvisMarchAddNextPoint minPoint [minPoint] processedPoints
 
+-- ALgorithm: 
+-- 1. start with the leftmost point
+-- 2. 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 -- Graham's Scan - And functions specific to it's implementation                                                                                --
@@ -255,3 +358,85 @@ grahamsScan points =
         minPoint = getLowestPoint points
         sortedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
         convexHull = gramScanAddNextPoint (reverse (take 3 sortedPoints)) ((drop 3 sortedPoints))
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+-- Quick Hull - And functions specific to it's implementation                                                                                   --
+--  * Algorithm from Wikipedia: https://en.wikipedia.org/wiki/Quickhull                                                                         --
+-------------------------------------------------------------------------------------------------------------------------------------------------- 
+
+-- A function that takes three points and returns something. We will use it to decide if a point is inside a triangle or not
+-- Copied/transcribed from here: https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle
+sign :: Point2D -> Point2D -> Point2D -> Number
+sign (x1, y1) (x2, y2) (x3, y3) = (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3)
+
+-- Determines if a point is inside a triangle or not
+-- Copied/transcribed from here: https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle
+-- Input:
+--  * trianglePoint1, trianglePoint2, trianglePoint3 - the points representing the triangle
+--  * nonTrianglePoint - the point we want to know about (is it outside or inside the traingle?)
+-- Output:
+pointInsideTriangle :: Point2D -> Point2D -> Point2D -> Point2D -> Bool
+pointInsideTriangle trianglePoint1 trianglePoint2 trianglePoint3 nonTrianglePoint =
+    not (hasNegative && hasPositive) -- https://hackage.haskell.org/package/base-4.14.0.0/docs/Prelude.html#v:not
+    where
+        d1 = sign nonTrianglePoint trianglePoint1 trianglePoint2
+        d2 = sign nonTrianglePoint trianglePoint2 trianglePoint3
+        d3 = sign nonTrianglePoint trianglePoint3 trianglePoint1
+        hasNegative = (d1 < 0) || (d2 < 0) || (d3 < 0)
+        hasPositive = (d1 > 0) || (d2 > 0) || (d3 > 0)
+
+-- "Find points on convex hull from the set Sk of points that are on the right side of the oriented line from P to Q" -https://en.wikipedia.org/wiki/Quickhull
+-- A quickhull helper function
+-- Input: 
+--  * inputList - the list of points we are finding the convex hull from
+--  * ((px, py),(qx, qy)) - the line
+-- Output: 
+-- https://en.wikipedia.org/wiki/Quickhull
+findHull :: [Point2D] -> Line -> [Point2D]
+findHull [] _ = []
+findHull inputList ((px, py),(qx, qy)) = 
+    convexHull ++ (findHull subset1 ((px, py), farthestPoint)) ++ (findHull subset2 (farthestPoint, (qx, qy))) 
+    where
+        -- From the given set of points in Sk, find farthest point, say C, from segment PQ -https://en.wikipedia.org/wiki/Quickhull
+        -- https://www.geeksforgeeks.org/quickhull-algorithm-convex-hull/ and https://stackoverflow.com/questions/45917027/haskell-max-number-in-a-list
+        -- https://hackage.haskell.org/package/base-4.14.0.0/docs/Prelude.html#v:abs
+        farthestPoint = foldr1 (\(xx,xy) (yx, yy) ->
+                                    let x = abs((xy - py) * (qx - px) - (qy - py) * (xx - px)) in
+                                    let y = abs((yy - py) * (qx - px) - (qy - py) * (yx - px)) in
+                                    if x >= y then (xx,xy) else (yx, yy)
+                                ) inputList
+
+        -- Add point C to convex hull at the location between P and Q -https://en.wikipedia.org/wiki/Quickhull
+        convexHull = [farthestPoint]
+
+        -- Three points P, Q, and C partition the remaining points of Sk into 3 subsets: S0, S1, and S2 
+        --   where S0 are points inside triangle PCQ, S1 are points on the right side of the oriented
+        --   line from P to C, and S2 are points on the right side of the oriented line from C to Q
+        -- -https://en.wikipedia.org/wiki/Quickhull
+        subset0 = filter (pointInsideTriangle (px, py) farthestPoint (qx, qy)) inputList
+        subset1 = filter (\point -> (sideOfLine ((px, py),farthestPoint) point) == Algorithms.Right) inputList
+        subset2 = filter (\point -> (sideOfLine (farthestPoint,(qx, qy)) point) == Algorithms.Right) inputList
+
+-- Executes the QuickHull Convex Hull Algorithm
+-- Input: the list of points you want the convex hull of
+-- Output: the result of the calculation
+-- Algorithm from https://en.wikipedia.org/wiki/Quickhull
+quickHull :: [Point2D] -> [Point2D]
+quickHull input =
+    -- Find the left and rightmost points
+    -- Divide the input points (aside from the left and rightmost points) into two sides
+    filteredInput
+    --[leftMostPoint, rightMostPoint] ++ hullLeft ++ hullRight
+    where
+        leftMostPoint = Data.List.minimumBy(farthest Algorithms.Right) input
+        rightMostPoint = Data.List.maximumBy(farthest Algorithms.Right) input 
+        line = (leftMostPoint, rightMostPoint)
+        filteredInput = removeFromList rightMostPoint (removeFromList leftMostPoint input)
+        leftSegment = filter (\point -> (sideOfLine line point) == Algorithms.Left) filteredInput
+        rightSegment = filter (\point -> (sideOfLine line point) == Algorithms.Right) filteredInput
+        hullLeft = findHull leftSegment (leftMostPoint, rightMostPoint)
+        hullRight = findHull rightSegment (rightMostPoint, leftMostPoint)

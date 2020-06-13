@@ -37,7 +37,7 @@ datasets = [
 algorithms = [
     (1, "Jarvis March", jarvisMarch),
     (2, "Graham's Scan", grahamsScan),
-    (3, "placeholder", id)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
+    (3, "Quick Hull", quickHull)] -- https://en.wikibooks.org/wiki/Haskell/Higher-order_functions - eh
 
 -- Functions for getting the first, second and third elements out of our algorithms tuples
 -- Input: none
