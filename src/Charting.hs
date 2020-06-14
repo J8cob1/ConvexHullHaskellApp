@@ -12,7 +12,12 @@ import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Backend.Diagrams
 
 -- Takes data sets and a title and renders a graph to a file with a specific name
--- Not sure what the type def should be because I don't know what the return type is
+-- Inputs:
+--  * allPoints - the dataset we convex hulled
+--  * hullPoints - the convex hull points
+--  * title - the title you want to give the graph
+--  * fileName - the name you want to give to the file we generate
+-- Output: nothing. I draws the graph and returns (runs in the main function)
 drawChart :: [Point2D] -> [Point2D] -> String -> String -> IO ()
 drawChart allPoints hullPoints title fileName = 
     -- The value after "def" specifies the name of the file. It seems that I can only get it to draw to svg photos
