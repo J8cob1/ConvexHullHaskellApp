@@ -61,80 +61,17 @@ sideOfLine ((l1x,l1y),(l2x,l2y)) (px, py) =
         p1psX = l2x - l1x
         p1psY = l2y - l1y
         crossProduct = (p2psX * p1psY) - (p1psX * p2psY) -- (p2 - p0) x (p1 - p0)
-
--- Similar to side of line, except that it takes a point position as an argument and returns true if the point is ineed
--- onSideOfLine :: Line -> Point2D -> PointPosition -> Bool
--- onSideOfLine ((l1x,l1y),(l2x,l2y)) (px, py) side =
---     -- Do a cross product
---     if (crossProduct > 0) then
---         side == Left
---     else if (crossProduct < 0)
---         side == Right
---     else
---         side == OnLine
---     where
---         p2psX = px - l1x
---         p2psY = py - l1y
---         p1psX = l2x - l1x
---         p1psY = l2y - l1y
---         crossProduct = (p2psX * p1psY) - (p1psX * p2psY) -- (p2 - p0) x (p1 - p0)
-
--- Takes a list of points, a line, and a point psoition and tells you if any of them points in the point list are on the "point position" side of the list
--- Input:
--- Output:
---anyPointsOnSideOfLine :: [Point2D] -> Line -> PointPosition -> Bool 
---anyPointsOnSideOfLine listOfPoints line side =
---    any (\point -> (sideOfLine line point) == side) listOfPoints
-
--- Go through a list of points and find the point whose line is on the left side
---search :: Line -> [Point2D] -> [Point2D] -> Point2D
---search _ [] _ = True
---search _ _ [] = True
---search line points (x:xs) = 
---    any (\x -> (sideOfLine line x) == False) listOfPoints
-    -- Left of point
---    if (sideOfLine line x) then
---        if leftside of x is left
---    else
---        sideOfLine
-
--- Jarvis March Algorithm
--- Get point on hull
--- Get rightmost/leftmost point after that
--- Keep going until you build the hull
---jarvisMarch :: [Point2D] -> [Point2D]
---jarvisMarch [] = []
---jarvisMarch (x,y,[]) = []
---jarvisMarch (x:y:z:xs) = 
---    jarvisMarch = dsfdfd
---    where
---        nextPoint
-
---jarvisMarchGetNext :: [Point2D] -> [Point2D] -> [Point2D]
---jarvisMarchGetNext known_points [] = []
---jarvisMarchGetNext known_points (x,y,[]) = []
---jarvisMarchGetNext known_points (x:y:z:xs) = 
---    -- First case is different if there are less than two points in the convex hull
---    if length known_points < 2 then
---        for all points in x1
---            if any (\x -> (sideOfLine line x) == Right) listOfPoints then return false
---    else
---        sdf
---    where
---        starting_point = head known_points
---        checkNextPoint = any (\x -> (sideOfLine line x) == Right) listOfPoints
-
     
 
 ------------------------------------------------
 -- Functions Common to one or more algorithms -- 
 ------------------------------------------------
 
--- A data.List sorting function to help us find the minimum of a set of points by y coordinate first, then by x
--- INPUT:
---  * param1 {Point2D}: the first point you want to compare
---  * param2 {Point2D}: the second point you want to compare
--- OUTPUT: an ordering of the two points
+-- A data.List sorting function to help us find get a sorted list
+-- Input:
+--  * param1 - the first point you want to compare
+--  * param2 - the second point you want to compare
+-- Output: an ordering of the two points
 farthest :: PointPosition -> Point2D -> Point2D -> Ordering
 farthest position (x1, y1) (x2, y2) =
     case position of
@@ -159,31 +96,31 @@ farthest position (x1, y1) (x2, y2) =
 
 -- A wrapper function to get the lowest point of a list of points (lowest as in, point with the least y-coordinate is lowest)
 -- Helpful to avoid too much extra code
--- INPUT {[Point2D]}: the list you want to get the lowest item from
--- OUTPUT: the lowest item in the list
+-- Input: the list you want to get the lowest item from
+-- Output: the lowest item in the list
 getLowestPoint :: [Point2D] -> Point2D
 getLowestPoint listOfPoints = Data.List.minimumBy (farthest Top) listOfPoints
 
 -- A wrapper function to get the highest point of a list of points (highest as in, point with the greatest y-coordinate is highest)
 -- Helpful to avoid too much extra code
--- INPUT {[Point2D]}: the list you want to get the highest item from
--- OUTPUT: the highest item in the list
+-- Input: the list you want to get the highest item from
+-- Output: the highest item in the list
 getHighestPoint :: [Point2D] -> Point2D
 getHighestPoint listOfPoints = Data.List.maximumBy (farthest Top) listOfPoints
 
 -- Checks if there are at least three points in this list
 -- Returns true if so, false otherwise
 -- Simple enough that no test is needed
--- INPUT {[Point2D]}: the list you want to check the size of
--- OUTPUT: true if there at least three items. False if not
+-- Input: the list you want to check the size of
+-- Output: true if there at least three items. False if not
 enoughPoints :: [Point2D] -> Bool
 enoughPoints coords = (length coords) > 2
 
 -- Removes a target point from a list of points and returns the resulting list
--- INPUT:
---  *param1 {Point2D}: the point you want to remove
---  *param2 {[Point2D]}: the list youwa to remove the specific point from
--- OUTPUT: the lowest item in the list
+-- Input:
+--  *param1 - the point you want to remove
+--  *param2 - the list youwa to remove the specific point from
+-- Output: the lowest item in the list
 removeFromList :: Point2D -> [Point2D] -> [Point2D]
 removeFromList item [] = []
 removeFromList item (x:xs) = 
@@ -192,100 +129,13 @@ removeFromList item (x:xs) =
     else
         [x] ++ (removeFromList item xs)
 
-
------------------------------------------------------------------------------------------------------------------------------------
--- Jarvis March - And functions specific to implementation                                                                       --
--- Jarvis March is a simple convex hull algorithm where we "gift warp"? our way around the set of points to find the convex hull --
--- My implementation attempts to simulate the working of the algorithm with list operations                                      --
--- Reference: "Introduction to Algorithms. Third Edition" [CLRS]                                                                 --
------------------------------------------------------------------------------------------------------------------------------------
-
--- Get starting point
--- Add a random ponit. See if there are any points to the left ot it. If there aren't it's good. If there are, try the next one
--- Once we find a working point, add ito the convex hull list, remove it from the restOfPoints lsit, and continue the execution recrusively
--- Stop when the next hull point is the beginning
-
--- Gets the next point in the convex hull given the lowest point on the hull, a list of points already on the hull, and a list of points not in the hull
--- broken, I think
--- INPUT:
---  * start - the starting point of the convex hull claculation. More specifically, the lowest (in terms of y [and x, if needed] coordinate)
---  * pointsOnHull - the points already in the convex hull
---  * allPoints - the points not on the convex hull (with the exception of the starting point, which should be here so the algorithm knows when to halt)
--- OUTPUT: the convex hull calculated using the information in the parameters after recursion is said and done, hopefully
-jarvisMarchAddNextPoint :: Point2D -> [Point2D] -> [Point2D] -> [Point2D]
-jarvisMarchAddNextPoint start [] [] = []
-jarvisMarchAddNextPoint start [] _ = []
-jarvisMarchAddNextPoint start pointsOnHull [] = pointsOnHull
-jarvisMarchAddNextPoint start pointsOnHull allPoints =
-    -- Stop the recursion once we get to the starting point, or we find no next point (the latter case shouldn't happen...)
-    if (nextHullPoint == start) then
-        pointsOnHull
-    -- Otherwise, continue the recursion
-    else
-        jarvisMarchAddNextPoint start (nextHullPoint:pointsOnHull) allPoints
-    where
-        lastHullPoint = head pointsOnHull
-        -- Go through each point. For every point:
-        -- Draw a line from the last hull point to the point, then go through every other point to see if there are points on the left side of the line. If there are, this not a hull point. If there aren't it is
-        nextHullPoint = (filter 
-                            (\point ->
-                                let line = (lastHullPoint, point) in -- https://wiki.haskell.org/Let_vs._Where maybe
-                                let newSet = removeFromList point allPoints in
-                                (all (\otherPoint -> (sideOfLine line otherPoint) /= Algorithms.Left) newSet)) -- https://stackoverflow.com/questions/34415487/what-does-the-operator-in-haskell-mean also: https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:any https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:all
-                            allPoints
-                        )!!0
-        --let newerSet = removeFromList otherPoint restOfPoints in
-        --any :: (a -> Bool) -> [a] -> Bool
-
--- Add form line, check if there are no points to the left of it. If there aren't accept the endpoint of the next poitn of the line
-
--- The main function of the Jarvis-March algorithm
--- Input {[Point2D]}: a list of points you want to find the conved hull of
--- Output: ideally, the convex hull of the set of points, if it has one
--- [CLRS] "Introduction to Algorithms" Textbook - though I changed my implementation to something else because I thought it would work (so the implementation is not exactly from here anymore)
-jarvisMarch :: [Point2D] -> [Point2D]
-jarvisMarch points =
-    if (not (enoughPoints points)) || (not (enoughPoints convexHull)) then
-        []
-    else
-        convexHull 
-    where
-        minPoint = getLowestPoint points
-        processedPoints = nub points -- https://hackage.haskell.org/package/base-4.14.0.0/docs/Data-List.html#v:nub and https://stackoverflow.com/questions/31150370/haskell-remove-duplicates-from-list
-        convexHull = jarvisMarchAddNextPoint minPoint [minPoint] processedPoints 
-
---------------------------------------------------------------------------------------------------------------------------------------------------
--- Graham's Scan - And functions specific to it's implementation                                                                                --
---   * Graham's Scan convex hull algorithm that uses a stack and a push/pop strategy to iteratively calculate the convex hull, in O(nlogn) time --
---   * Algorithm from: Cormon et al. "Introduction to Algorithms. Third Edition" [CLRS]                                                         --
--- My implementation attempts to simulate the working of the algorithm with list operations                                                     --
--------------------------------------------------------------------------------------------------------------------------------------------------- 
-
--- Remove all points in the list with the same polar angle (with respect to a given starting point)
--- Input:
---   * param1 {Point2D} (start): the starting point from which we base our polar angle calculations,
---   * param2 {[Point2D]} ((x:x1:...:xs)): the list we rare removing polar angle duplicates from
--- Output: true if function returned the expected result, False otherwise
--- Presumes the items are sorted by polar angle already
-removePolarAngleDupsFromList :: Point2D -> [Point2D] -> [Point2D]
-removePolarAngleDupsFromList start [] = []
-removePolarAngleDupsFromList start (x:[]) = [x]
-removePolarAngleDupsFromList (sx, sy) ((x1,y1):(x2,y2):xs) = 
-    if ((x1,y1) /= (sx,sy) && (polarAngle False (sx, sy) (x1,y1) (x2,y2)) == EQ) then
-        if (((x1 - sx)^2 + (y1 - sy)^2) > ((x2 - sx)^2 + (y2 - sy)^2)) then 
-            (removePolarAngleDupsFromList (sx, sy) ((x1,y1):xs))
-        else
-            (removePolarAngleDupsFromList (sx, sy) ((x2,y2):xs))
-    else
-        [(x1,y1)] ++ (removePolarAngleDupsFromList (sx, sy) ((x2,y2):xs))
-
 -- Compares the polar angles of two points with respect to a starting point and the x-axis, and returns an ordering specifying the result
 -- This is meant to be a list sorting function
 -- Input:
---   * param1 {Bool} negateiveXAxis: a boolean indicating whether to use the negative x axis.
---   * param2 {Point2D} (sx, sy): the starting point to which we base our polar angle calculations
---   * param3 {Point2D} (x1, y1): the first point whose polar angle we will calculate and compare
---   * param4 {Point2D} (x2, y2): the second point whose polar angle we will calculate and compare
+--   * negateiveXAxis - a boolean indicating whether to use the negative x axis.
+--   * (sx, sy) - the starting point to which we base our polar angle calculations
+--   * (x1, y1) - the first point whose polar angle we will calculate and compare
+--   * (x2, y2) - the second point whose polar angle we will calculate and compare
 -- Output:
 --   * EQ if (x1, y1) and (x2, y2) have equal polar angles with respect to the starting point and positive x axis
 --   * GT if (x1, y1) has a greater polar angle with respect to the starting point and positive x axis than (x2, y2)
@@ -303,11 +153,100 @@ polarAngle negativeXAxis (sx, sy) (x1, y1) (x2, y2) =
         angle1 = atan2 (y1 - sy) (x1 - sx)
         angle2 = atan2 (y2 - sy) (x2 - sx)
 
+
+-----------------------------------------------------------------------------------------------------------------------------------
+-- Jarvis March - And functions specific to implementation                                                                       --
+-- A simple convex hull algorithm where we "gift warp" our way around the set of points to find the convex hull                  --
+-- My implementation attempts to simulate the working of the algorithm with list operations                                      --
+-- References: https://www.youtube.com/watch?v=Vu84lmMzP2o&t=204s and "Introduction to Algorithms. Third Edition" [CLRS]         --
+-----------------------------------------------------------------------------------------------------------------------------------
+
+-- Gets the next point in the convex hull given the lowest point on the hull, a list of points already on the hull, and a list of points not in the hull
+-- broken, I think
+-- Input:
+--  * start - the starting point of the convex hull claculation. More specifically, the lowest (in terms of y [and x, if needed] coordinate)
+--  * pointsOnHull - the points already in the convex hull
+--  * allPoints - the points not on the convex hull (with the exception of the starting point, which should be here so the algorithm knows when to halt)
+-- Output: the convex hull calculated using the information in the parameters after recursion is said and done, hopefully
+-- https://www.youtube.com/watch?v=Vu84lmMzP2o&t=204s and whatever came from from my attempt at the algorithm from [CLRS] (that I decided to keep)
+jarvisMarchAddNextPoint :: Point2D -> [Point2D] -> [Point2D] -> [Point2D]
+jarvisMarchAddNextPoint start [] [] = []
+jarvisMarchAddNextPoint start [] _ = []
+jarvisMarchAddNextPoint start pointsOnHull [] = pointsOnHull
+jarvisMarchAddNextPoint start pointsOnHull allPoints =
+    -- Stop the recursion once we get to the starting point again. We've found the hull
+    if (sortedNextHullPoints!!0 == start) then
+        pointsOnHull
+    else
+        jarvisMarchAddNextPoint start (sortedNextHullPoints ++ pointsOnHull) allPoints
+    where
+        lastHullPoint = head pointsOnHull
+        
+        -- Go through each point. For every point:
+        -- Not sure how this will handle points on the same line - right now, it doesn't
+        -- Draw a line from the last hull point to the point, then go through every other point to see if there are points on the left side of the line. If there are, this not a hull point. If there aren't it is
+        nextHullPoints = (filter 
+                            (\point ->
+                                let line = (lastHullPoint, point) in -- https://wiki.haskell.org/Let_vs._Where maybe
+                                let allPoints2 = removeFromList lastHullPoint (removeFromList point allPoints) in
+                                let isRightOfLine = (\otherPoint -> (sideOfLine line otherPoint) /= Algorithms.Left) in
+                                (all isRightOfLine allPoints2)) -- https://stackoverflow.com/questions/34415487/what-does-the-operator-in-haskell-mean also: https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:any https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:all
+                            allPoints
+                        )
+
+        distanceToLastHullPoint = (\(x1, y1) (x2, y2) -> -- https://orion.math.iastate.edu/dept/links/formulas/form2.pdf 
+                                    let sourceX = fst lastHullPoint in
+                                    let sourceY = snd lastHullPoint in
+                                    let distance1 = sqrt ((x1 - sourceX)**2 + (y1 - sourceY)**2) in
+                                    let distance2 = sqrt ((x2 - sourceX)**2 + (y2 - sourceY)**2) in
+                                    compare distance2 distance1) -- Yes, distance1 and distance2 are intentionally reversed
+
+        sortedNextHullPoints = Data.List.sortBy distanceToLastHullPoint (nextHullPoints \\ [lastHullPoint])
+
+-- The main function of the Jarvis-March algorithm
+-- Input: a list of points you want to find the conved hull of
+-- Output: ideally, the convex hull of the set of points, if it has one
+jarvisMarch :: [Point2D] -> [Point2D]
+jarvisMarch points =
+    if (not (enoughPoints points)) then -- || (not (enoughPoints convexHull)) then
+        []
+    else
+        convexHull
+    where
+        minPoint = getLowestPoint points
+        processedPoints = nub points -- https://hackage.haskell.org/package/base-4.14.0.0/docs/Data-List.html#v:nub and https://stackoverflow.com/questions/31150370/haskell-remove-duplicates-from-list
+        convexHull = jarvisMarchAddNextPoint minPoint [minPoint] processedPoints
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+-- Graham's Scan - And functions specific to it's implementation                                                                                --
+--   * Graham's Scan convex hull algorithm that uses a stack and a push/pop strategy to iteratively calculate the convex hull, in O(nlogn) time --
+--   * Algorithm from: Cormon et al. "Introduction to Algorithms. Third Edition" [CLRS]                                                         --
+-- My implementation attempts to simulate the working of the algorithm with list operations                                                     --
+-------------------------------------------------------------------------------------------------------------------------------------------------- 
+
+-- Remove all points in the list with the same polar angle (with respect to a given starting point)
+-- Input:
+--   * start/(sx, sy) - the starting point from which we base our polar angle calculations,
+--   * (x:...) - the list we rare removing polar angle duplicates from
+-- Output: true if function returned the expected result, False otherwise
+-- Presumes the items are sorted by polar angle already
+removePolarAngleDupsFromList :: Point2D -> [Point2D] -> [Point2D]
+removePolarAngleDupsFromList start [] = []
+removePolarAngleDupsFromList start (x:[]) = [x]
+removePolarAngleDupsFromList (sx, sy) ((x1,y1):(x2,y2):xs) = 
+    if ((x1,y1) /= (sx,sy) && (polarAngle False (sx, sy) (x1,y1) (x2,y2)) == EQ) then
+        if (((x1 - sx)^2 + (y1 - sy)^2) > ((x2 - sx)^2 + (y2 - sy)^2)) then 
+            (removePolarAngleDupsFromList (sx, sy) ((x1,y1):xs))
+        else
+            (removePolarAngleDupsFromList (sx, sy) ((x2,y2):xs))
+    else
+        [(x1,y1)] ++ (removePolarAngleDupsFromList (sx, sy) ((x2,y2):xs))
+
 -- Tells you if the lines formed by (sx, sy) and (x1, y1) and (x1, y1) and (x2, y2) make a "left turn". This is used by the Graham's Scan Algorithm
 -- Input:
---   * param1 {Point2D} (sx, sy): the starting point from which we base our "left turn" calculation of off
---   * param2 {Point2D} (x1, y1): the first point from which we form the first and second lines in our calculation
---   * param3 {Point2D} (y2, y2): the second point from which we form the second and third lines of our calculation
+--   * (sx, sy) - the starting point from which we base our "left turn" calculation of off
+--   * (x1, y1) - the first point from which we form the first and second lines in our calculation
+--   * (y2, y2) - the second point from which we form the second and third lines of our calculation
 -- Output: true if points form a left turn. False otherwise
 -- [CLRS] "Introduction to Algorithms" Textbook
 makesLeftTurn :: Point2D -> Point2D -> Point2D -> Bool
@@ -326,8 +265,8 @@ makesLeftTurn (sx, sy) (x1, y1) (x2, y2) =
 -- A part of the Graham's Scan algorithm that pops points off of the "stack" (list) if the two points and the given new point don't make a left turn
 -- Once it sees that you've made a right turn, it puts the new point onto the stack
 -- Input:
---   * param1 {Point2D} (newPoint): the starting point from which we base our "left turn" calculation of off
---   * param2 {[Point2D]} (top:nextToTop:rest): the "stack" we will pop points off of for our left turn calculation
+--   * (newPoint) - the starting point from which we base our "left turn" calculation of off
+--   * (top:nextToTop:rest) - the "stack" we will pop points off of for our left turn calculation
 -- Output: a set of points that, at the end of it's operation, will hopefully be the convex hull of a set of points
 -- [CLRS] "Introduction to Algorithms" Textbook
 gramsScanAmmendStack :: Point2D -> [Point2D] -> [Point2D]
@@ -343,8 +282,8 @@ gramsScanAmmendStack newPoint (top:nextToTop:rest) =
 -- A part of the Graham's Scan algorithm that wraps and recursively calls the gramsScanAmmendStack function. 
 -- It basically helps add/remove items to the list representing the sorted list of points as we process them.
 -- Input:
---   * param1 {[Point2D]} (x:xs): a list of points representing a stack. 
---   * param2 {[Point2D]} (y:ys): the list of points we have left to process
+--   * (x:xs) - a list of points representing a stack. 
+--   * (y:ys) - the list of points we have left to process
 -- Output: a set of points that, at the end of it's operation, will hopefully be the convex hull of a set of points
 -- [CLRS] "Introduction to Algorithms" Textbook
 gramScanAddNextPoint :: [Point2D] -> [Point2D] -> [Point2D]
@@ -356,7 +295,7 @@ gramScanAddNextPoint (x:xs) (y:ys) =
         cleanedList = gramsScanAmmendStack y (x:xs)
 
 -- The main function of the Graham's Scan algorithm
--- Input {[Point2D]}: a list of points you want to find the conved hull of
+-- Input: a list of points you want to find the conved hull of
 -- Output: ideally, the convex hull of the set of points, if it has one
 -- [CLRS] "Introduction to Algorithms" Textbook
 grahamsScan :: [Point2D] -> [Point2D]
@@ -369,8 +308,6 @@ grahamsScan points =
         minPoint = getLowestPoint points
         sortedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
         convexHull = gramScanAddNextPoint (reverse (take 3 sortedPoints)) ((drop 3 sortedPoints))
-
-
 
 
 
@@ -403,7 +340,7 @@ pointInsideTriangle trianglePoint1 trianglePoint2 trianglePoint3 nonTrianglePoin
 -- "Find points on convex hull from the set Sk of points that are on the right side of the oriented line from P to Q" -https://en.wikipedia.org/wiki/Quickhull
 -- A quickhull helper function
 -- Input: 
---  * inputList - the list of points we are finding the convex hull from
+--  * InputList - the list of points we are finding the convex hull from
 --  * ((px, py),(qx, qy)) - the line
 -- Output: 
 -- https://en.wikipedia.org/wiki/Quickhull
@@ -440,7 +377,7 @@ findHull inputList ((px, py),(qx, qy)) =
 quickHull :: [Point2D] -> [Point2D]
 quickHull input =
     -- Find the left and rightmost points
-    -- Divide the input points (aside from the left and rightmost points) into two sides
+    -- Divide the Input points (aside from the left and rightmost points) into two sides
     --filteredInput
     Data.List.sortBy (polarAngle False lowestPoint) ([leftMostPoint, rightMostPoint] ++ hullLeft ++ hullRight)
     where
