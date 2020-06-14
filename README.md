@@ -8,5 +8,8 @@ stack run
 
 ## Current Features
 - Allows you to run three algorithms on convex hull datasets via a terminal user interface
+- Graphs the results (by generating .svg images with the convex hull outlined)
 - Allows you to enter and randomly generate your own custom datasets using some parameters that you can specify
-- Draws basic graphs of the resulting convex hulls
+
+## Problems
+- The Graham's Scan and QuickHull algorithms don't seem to work right (if you generate a couple of large datasets with x and y values of great range and decent size you might see)

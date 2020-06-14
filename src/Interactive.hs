@@ -1,4 +1,4 @@
--- Referenced:
+-- Some sources I referenced:
 -- https://stackoverflow.com/questions/53186296/converting-char-to-int-in-haskell
 -- https://wiki.haskell.org/How_to_work_on_lists
 -- https://wiki.haskell.org/Cookbook/Lists_and_strings
@@ -82,10 +82,6 @@ verifySelection given_datasets algorithmSelection datasetSelection =
         valid = 
             algorithmNum <= (length algorithms) && algorithmNum > 0 &&
             datasetNum <= (length given_datasets) && datasetNum > 0 -- https://stackoverflow.com/questions/5710078/in-haskell-performing-and-and-or-for-boolean-functions
-        
-
---getAlgorithms :: [[Point2D] -> [Point2D]]
---getAlgorithms = map getThird algorithms
 
 -- Executes an algorithm on a dataset and returns the results, formatted as a string. This is a part of the interactive program that executes all of the algorithms on all of the datasets
 -- Input:
@@ -131,12 +127,10 @@ runAlgorithmAndDrawChart algorithm dataset = do
 runAllAlgorithms :: [[Point2D]] -> IO ()
 runAllAlgorithms input_datasets = do
     putStrLn "Results\n-------"
-    --putStr (concat results) -- show all the results
     chartdraw -- draw charts
     putStrLn "\nBenchmarks\n----------"
     benchmarks -- show benchmarks
     where
-        --results = map (\algorithm -> runAlgorithmOnDatasets algorithm input_datasets) algorithms
         chartdraw = mapM_ (\algorithm -> mapM_ (runAlgorithmAndDrawChart algorithm) (zip [1..] input_datasets)) algorithms -- https://stackoverflow.com/questions/9749904/what-is-a-good-way-to-generate-a-infinite-list-of-all-integers-in-haskell
         benchmarks = mapM_ (\algorithm -> mapM_ (benchmarkAlgorithmOnDataset algorithm) input_datasets) algorithms -- https://stackoverflow.com/questions/45194657/how-do-i-run-through-a-list-with-an-io-operation
 
@@ -149,11 +143,6 @@ pointListToCleanStr :: Int -> [[Point2D]] -> String
 pointListToCleanStr num [] = ""
 pointListToCleanStr num (x:xs) =
     show num ++ ". " ++ (show x) ++ "\n" ++ (pointListToCleanStr (num+1) xs) -- needs 1. nums
-
--- A helper function that allow us to 
---algorithmAndResultToString :: (Int, String, [Point2D] -> [Point2D]) -> [Point2D] -> String
---algorithmAndResultToString algoEntry result =
---    (getSecond algoEntry) ++ ['\n'] ++ show result -- copied displayAlgorithms and modified it
 
 -- Returning a string represenation of the list of our convex hull algorithms
 -- Input:
