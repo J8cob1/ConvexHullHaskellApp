@@ -29,4 +29,6 @@ drawChart allPoints hullPoints title fileName =
 
         -- Draw points on hull and a line connecting them (to form the hull)
         plot $ points "Convex Hull Points" hullPoints 
-        plot (line "Convex Hull Line" [hullPoints ++ [(head hullPoints)]]) -- we add the point at the beginning of the hull to the end so a complete shape is rendered
+        plot (line "Convex Hull Line" linePoints)
+    where
+        linePoints = if (hullPoints /= []) then [hullPoints ++ [(head hullPoints)]] else [] -- we add the point at the beginning of the hull to the end so a complete shape is rendered
