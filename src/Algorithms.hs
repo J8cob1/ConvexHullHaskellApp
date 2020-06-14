@@ -5,7 +5,7 @@
 - Problem: these algorithms don't work right now
 -}
 
-{- Some references used:
+{- Some (other) references used:
 -  [CLRS] - Cormon et al. "Introduction to Algorithms. Third Edition"
 -  https://hackage.haskell.org/package/base-4.12.0.0/docs/Data-List.html
 -  https://mathworld.wolfram.com/PolarAngle.html
@@ -22,6 +22,8 @@
 -- https://hackage.haskell.org/package/cmath ?
 -- https://www.mathsisfun.com/polar-cartesian-coordinates.html 
 -- https://www.mathsisfun.com/geometry/radians.html
+-- https://hackage.haskell.org/package/base-4.14.0.0/docs/Prelude.html#v:map
+-- https://hackage.haskell.org/package/base-4.14.0.0/docs/Prelude.html#v:sum (maybe not)
 -}
 
 module Algorithms where
@@ -29,7 +31,7 @@ module Algorithms where
 -- Imports
 import Data.List
 
--- Typedefs and custom types
+-- Typedefs and custom types4
 type Number = Double
 type Point2D = (Number, Number)
 type Line = (Point2D, Point2D)
@@ -198,31 +200,44 @@ removeFromList item (x:xs) =
 -- Reference: "Introduction to Algorithms. Third Edition" [CLRS]                                                                 --
 -----------------------------------------------------------------------------------------------------------------------------------
 
+-- Get starting point
+-- Add a random ponit. See if there are any points to the left ot it. If there aren't it's good. If there are, try the next one
+-- Once we find a working point, add ito the convex hull list, remove it from the restOfPoints lsit, and continue the execution recrusively
+-- Stop when the next hull point is the beginning
+
 -- Gets the next point in the convex hull given the lowest point on the hull, a list of points already on the hull, and a list of points not in the hull
 -- broken, I think
 -- INPUT:
---  *param1 {Point2D} (start): the starting point of the convex hull claculation. More specifically, the lowest (in terms of y [and x, if needed] coordinate)
---  *param2 {[Point2D]} (pointsOnHull): the points already in the convex hull
---  *param3 {[Point2D]} (restOfPoints): the points not on the convex hull (with the exception of the starting point, which should be here so the algorithm knows when to halt)
+--  * start - the starting point of the convex hull claculation. More specifically, the lowest (in terms of y [and x, if needed] coordinate)
+--  * pointsOnHull - the points already in the convex hull
+--  * allPoints - the points not on the convex hull (with the exception of the starting point, which should be here so the algorithm knows when to halt)
 -- OUTPUT: the convex hull calculated using the information in the parameters after recursion is said and done, hopefully
 jarvisMarchAddNextPoint :: Point2D -> [Point2D] -> [Point2D] -> [Point2D]
 jarvisMarchAddNextPoint start [] [] = []
+jarvisMarchAddNextPoint start [] _ = []
 jarvisMarchAddNextPoint start pointsOnHull [] = pointsOnHull
-jarvisMarchAddNextPoint start pointsOnHull restOfPoints =
-    -- Stops the recursion
+jarvisMarchAddNextPoint start pointsOnHull allPoints =
+    -- Stop the recursion once we get to the starting point, or we find no next point (the latter case shouldn't happen...)
     if (nextHullPoint == start) then
         pointsOnHull
+    -- Otherwise, continue the recursion
     else
-        jarvisMarchAddNextPoint start (nextHullPoint:pointsOnHull) (removeFromList nextHullPoint restOfPoints)
+        jarvisMarchAddNextPoint start (nextHullPoint:pointsOnHull) allPoints
     where
         lastHullPoint = head pointsOnHull
-        workingSet = 
-            if (lastHullPoint == start) then 
-                removeFromList start restOfPoints
-            else
-                restOfPoints
-        nextHullPoint = 
-            head (reverse (removePolarAngleDupsFromList lastHullPoint (Data.List.sortBy (polarAngle False lastHullPoint) workingSet)))
+        -- Go through each point. For every point:
+        -- Draw a line from the last hull point to the point, then go through every other point to see if there are points on the left side of the line. If there are, this not a hull point. If there aren't it is
+        nextHullPoint = (filter 
+                            (\point ->
+                                let line = (lastHullPoint, point) in -- https://wiki.haskell.org/Let_vs._Where maybe
+                                let newSet = removeFromList point allPoints in
+                                (all (\otherPoint -> (sideOfLine line otherPoint) /= Algorithms.Left) newSet)) -- https://stackoverflow.com/questions/34415487/what-does-the-operator-in-haskell-mean also: https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:any https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:all
+                            allPoints
+                        )!!0
+        --let newerSet = removeFromList otherPoint restOfPoints in
+        --any :: (a -> Bool) -> [a] -> Bool
+
+-- Add form line, check if there are no points to the left of it. If there aren't accept the endpoint of the next poitn of the line
 
 -- The main function of the Jarvis-March algorithm
 -- Input {[Point2D]}: a list of points you want to find the conved hull of
@@ -233,15 +248,11 @@ jarvisMarch points =
     if (not (enoughPoints points)) || (not (enoughPoints convexHull)) then
         []
     else
-        convexHull
+        convexHull 
     where
         minPoint = getLowestPoint points
-        processedPoints = removePolarAngleDupsFromList minPoint (Data.List.sortBy (polarAngle False minPoint) points)
-        convexHull = jarvisMarchAddNextPoint minPoint [minPoint] processedPoints
-
--- ALgorithm: 
--- 1. start with the leftmost point
--- 2. 
+        processedPoints = nub points -- https://hackage.haskell.org/package/base-4.14.0.0/docs/Data-List.html#v:nub and https://stackoverflow.com/questions/31150370/haskell-remove-duplicates-from-list
+        convexHull = jarvisMarchAddNextPoint minPoint [minPoint] processedPoints 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 -- Graham's Scan - And functions specific to it's implementation                                                                                --
@@ -404,6 +415,7 @@ findHull inputList ((px, py),(qx, qy)) =
         -- From the given set of points in Sk, find farthest point, say C, from segment PQ -https://en.wikipedia.org/wiki/Quickhull
         -- https://www.geeksforgeeks.org/quickhull-algorithm-convex-hull/ and https://stackoverflow.com/questions/45917027/haskell-max-number-in-a-list
         -- https://hackage.haskell.org/package/base-4.14.0.0/docs/Prelude.html#v:abs
+        -- https://hackage.haskell.org/package/base-4.14.0.0/docs/Data-List.html
         farthestPoint = foldr1 (\(xx,xy) (yx, yy) ->
                                     let x = abs((xy - py) * (qx - px) - (qy - py) * (xx - px)) in
                                     let y = abs((yy - py) * (qx - px) - (qy - py) * (yx - px)) in
@@ -429,14 +441,15 @@ quickHull :: [Point2D] -> [Point2D]
 quickHull input =
     -- Find the left and rightmost points
     -- Divide the input points (aside from the left and rightmost points) into two sides
-    filteredInput
-    --[leftMostPoint, rightMostPoint] ++ hullLeft ++ hullRight
+    --filteredInput
+    Data.List.sortBy (polarAngle False lowestPoint) ([leftMostPoint, rightMostPoint] ++ hullLeft ++ hullRight)
     where
+        lowestPoint = getLowestPoint input
         leftMostPoint = Data.List.minimumBy(farthest Algorithms.Right) input
         rightMostPoint = Data.List.maximumBy(farthest Algorithms.Right) input 
         line = (leftMostPoint, rightMostPoint)
         filteredInput = removeFromList rightMostPoint (removeFromList leftMostPoint input)
-        leftSegment = filter (\point -> (sideOfLine line point) == Algorithms.Left) filteredInput
         rightSegment = filter (\point -> (sideOfLine line point) == Algorithms.Right) filteredInput
-        hullLeft = findHull leftSegment (leftMostPoint, rightMostPoint)
-        hullRight = findHull rightSegment (rightMostPoint, leftMostPoint)
+        leftSegment = filter (\point -> (sideOfLine line point) == Algorithms.Left) filteredInput
+        hullRight = findHull rightSegment (leftMostPoint, rightMostPoint)
+        hullLeft = findHull leftSegment (rightMostPoint, leftMostPoint)
