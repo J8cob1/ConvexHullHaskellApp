@@ -1,0 +1,39 @@
+https://wiki.haskell.org/Blow_your_mind
+https://stackoverflow.com/questions/42989648/set-counter-in-haskell-and-increment-it
+https://stackoverflow.com/questions/27080626/haskell-apply-single-value-to-a-list-of-functions
+https://stackoverflow.com/questions/60730907/haskell-use-list-generated-in-io-function-in-another-non-io-function
+https://stackoverflow.com/questions/4340278/how-to-run-a-sequence-of-operations-functions-in-haskell
+
+https://www.reddit.com/r/haskellquestions/comments/6awlog/using_newlines_and_tabs_etc_without_using_io/dhi15x9/
+https://hackage.haskell.org/package/base-4.14.0.0/docs/Prelude.html#v:zip or https://hoogle.haskell.org/?hoogle=zip
+https://hackage.haskell.org/package/tostring
+https://wiki.haskell.org/Cookbook/Lists_and_strings
+https://www.haskell.org/tutorial/io.html
+https://wiki.haskell.org/How_to_work_on_lists
+https://stackoverflow.com/questions/9624655/how-can-i-use-haskell-to-check-if-a-list-contains-the-values-in-a-tuple - maybe not
+https://wiki.haskell.org/Power_function - might already be cited
+https://stackoverflow.com/questions/6695267/get-sqrt-from-int-in-haskell - might already be cited?
+https://stackoverflow.com/questions/5844347/accessing-a-specific-element-in-a-tuple - might alreayd be cited
+https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:any%20https://hackage.haskell.org/package/base-4.14.0.0/docs/GHC-List.html#v:all - might already be cited
+https://en.wikipedia.org/wiki/Gift_wrapping_algorithm - might already be cited
+https://www.geeksforgeeks.org/quickhull-algorithm-convex-hull/ - probably not
+https://stackoverflow.com/questions/28396572/how-i-can-compare-a-variable-with-a-data-type-in-haskell - might already be cited
+https://stackoverflow.com/questions/45917027/haskell-max-number-in-a-list - maybe?
+https://stackoverflow.com/questions/9418937/find-point-farthest-from-line - didn't end up being used?
+https://hackage.haskell.org/package/base-4.14.0.0/docs/Data-List.html#v:sortBy
+https://wiki.haskell.org/Let_vs._Where
+https://en.wikipedia.org/wiki/Quickhull - probably already there
+https://www.tutorialspoint.com/haskell/haskell_nested_if_else_statement.htm - ehh or probably: https://stackoverflow.com/questions/46774680/is-it-possible-to-do-nested-if-statements-in-haskell if it's not already cited
+https://stackoverflow.com/questions/940382/what-is-the-difference-between-dot-and-dollar-sign - if not cited
+https://wiki.haskell.org/How_to_work_on_lists - if not already cited
+https://docs.haskellstack.org/en/stable/install_and_upgrade/
+https://docs.haskellstack.org/en/v1.2.0/GUIDE/
+https://docs.haskellstack.org/en/stable/README/
+https://hackage.haskell.org/package/Chart-1.9.3/docs/Graphics-Rendering-Chart-Drawing.html#t:PointShape and https://hackage.haskell.org/package/Chart-1.9.3/docs/Graphics-Rendering-Chart-Drawing.html if need to be cited
+https://stackoverflow.com/questions/4573692/haskell-lists-difference - if not already cited
+https://hackage.haskell.org/package/sort-1.0.0.0/docs/Data-Sort.html - if not already cited
+http://hackage.haskell.org/package/Chart-diagrams
+https://github.com/timbod7/haskell-chart/wiki/example-10
+https://github.com/timbod7/haskell-chart/wiki
+https://hackage.haskell.org/package/Chart-1.9.3/docs/Graphics-Rendering-Chart-Easy.html
+https://www.youtube.com/watch?v=Vu84lmMzP2o
